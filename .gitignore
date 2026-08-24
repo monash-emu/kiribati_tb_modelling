@@ -219,3 +219,17 @@ appendix/*
 !appendix/figures/tb_model.png
 notebooks/dummy_outputs.csv
 notebooks/manuscript_figs/results_text.txt
+notebooks/quarto_all_task_outputs_files/libs/bootstrap/bootstrap-icons.css
+notebooks/quarto_all_task_outputs_files/libs/bootstrap/bootstrap-icons.woff
+notebooks/quarto_all_task_outputs_files/libs/bootstrap/bootstrap.min.js
+notebooks/quarto_all_task_outputs_files/libs/clipboard/clipboard.min.js
+notebooks/quarto_all_task_outputs_files/libs/quarto-html/anchor.min.js
+notebooks/quarto_all_task_outputs_files/libs/quarto-html/popper.min.js
+notebooks/quarto_all_task_outputs_files/libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css
+notebooks/quarto_all_task_outputs_files/libs/quarto-html/quarto.js
+notebooks/quarto_all_task_outputs_files/libs/quarto-html/tippy.css
+notebooks/quarto_all_task_outputs_files/libs/quarto-html/tippy.umd.min.js
+notebooks/quarto_all_task_outputs_files/libs/quarto-html/axe/axe-check.js
+notebooks/quarto_all_task_outputs_files/libs/quarto-html/tabsets/tabsets.js
+notebooks/quarto_all_task_outputs_files/libs/bootstrap/bootstrap-d6a003b94517c951b2d65075d42fb01b.min.css
+notebooks/quarto_all_task_outputs.html

@@ -1,6 +1,7 @@
 from pathlib import Path
 import arviz as az
 from math import ceil
+import itertools
 
 from copy import copy
 import yaml
@@ -139,7 +140,8 @@ def plot_post_prior_comparison(
     priors: list,
     n_col=4,
     req_size=None,
-    output_folder_path=None
+    output_folder_path=None,
+    kde_bw="silverman"
 ) -> plt.figure:
     """Plot comparison of calibration posterior estimates
     for parameters against their prior distributions.
@@ -150,38 +152,66 @@ def plot_post_prior_comparison(
         priors: Prior distributions for the parameters
         n_col: Requested number of columns
         req_size: Figure size request
+        kde_bw: Bandwidth rule or scalar for KDE smoothing
 
     Returns:
         The figure
     """
-    n_row = ceil(len(req_vars) / n_col) 
-    grid = [n_row, n_col]
-    size = req_size if req_size else None
+    n_row = ceil(len(req_vars) / n_col)
+    size = req_size if req_size else (4.2 * n_col, 3.0 * n_row)
 
     chain_length = idata.sample_stats.sizes['draw']
     burnt_idata = idata.sel(draw=range(burn_in, chain_length))  # Discard burn-in
 
-    fig = az.plot_density(burnt_idata, var_names=req_vars, shade=0.3, grid=grid, figsize=size, hdi_prob=1.)   
-    for i_ax, ax in enumerate(fig.ravel()):
-        ax_limits = ax.get_xlim()
-        param = ax.title.get_text().split("\n")[0]
-        if param:
-            x_vals = np.linspace(*ax_limits, 50)
-            distri = priors[i_ax]
+    fig, axes = plt.subplots(n_row, n_col, figsize=size)
+    axes = axes.flatten() if hasattr(axes, "flatten") else [axes]
 
-            if type(distri) != esp.TruncNormalPrior:
+    prior_lookup = {
+        p.name: p for p in priors
+        if hasattr(p, "name")
+    }
+
+    for i_ax, param in enumerate(req_vars):
+        ax = axes[i_ax]
+        if param not in burnt_idata.posterior.data_vars:
+            ax.set_visible(False)
+            continue
+
+        values = burnt_idata.posterior[param].values.flatten()
+        az.plot_kde(
+            values,
+            ax=ax,
+            bw=kde_bw,
+            plot_kwargs={"color": "tab:blue", "linewidth": 1.8},
+            fill_kwargs={"alpha": 0.3, "color": "tab:blue"}
+        )
+
+        distri = prior_lookup.get(param)
+        if distri is not None and type(distri) != esp.TruncNormalPrior:
+            x_min = float(np.nanmin(values))
+            x_max = float(np.nanmax(values))
+            if np.isfinite(x_min) and np.isfinite(x_max) and x_max > x_min:
+                pad = 0.15 * (x_max - x_min)
+                x_vals = np.linspace(x_min - pad, x_max + pad, 200)
                 y_vals = np.exp(distri.logpdf(x_vals))
-                
-                ax.fill_between(x_vals, y_vals, color="k", alpha=0.2, linewidth=2)
-    # ax.figure.suptitle(country, fontsize=30, y=1.0)
+                ax.plot(x_vals, y_vals, color="k", linewidth=1.3, alpha=0.9)
+                ax.fill_between(x_vals, y_vals, color="k", alpha=0.15)
+
+        ax.set_title(param)
+        ax.set_xlabel("Value")
+        ax.set_ylabel("Density")
+        ax.grid(alpha=0.3)
+
+    for j in range(len(req_vars), len(axes)):
+        fig.delaxes(axes[j])
+
+    fig.tight_layout()
 
     if output_folder_path:
-        plt.savefig(output_folder_path / "mc_posteriors.jpg", facecolor="white", bbox_inches='tight')
-        plt.close()
-        
-    ax.figure.tight_layout()
-    
-    return ax.figure
+        fig.savefig(output_folder_path / "mc_posteriors.jpg", facecolor="white", bbox_inches='tight')
+        plt.close(fig)
+
+    return fig
 
 
 def plot_multiple_posteriors(idata, burn_in=0, req_vars=None, output_folder_path=None):
@@ -230,6 +260,160 @@ def plot_multiple_posteriors(idata, burn_in=0, req_vars=None, output_folder_path
         plt.close()
     else:
         plt.show()
+
+
+def plot_dual_posterior_by_rates(
+    completed_df,
+    target_rel_sus=1.5,
+    panel_a_var="clinical_progression_rate",
+    panel_b_candidates=None,
+    kde_bw="silverman",
+    fig_size=(12.5, 4.8),
+):
+    """Plot two posterior density panels across tasks for one relative susceptibility value.
+
+    Panel a always uses ``panel_a_var``. Panel b uses the first available variable from
+    ``panel_b_candidates``.
+
+    Args:
+        completed_df: DataFrame with columns ``task``, ``task_path``, and ``task_config``.
+        target_rel_sus: Relative susceptibility value used to filter tasks.
+        panel_a_var: Variable name for panel a.
+        panel_b_candidates: Candidate variable names for panel b.
+        kde_bw: Bandwidth rule passed to ``az.plot_kde``.
+        fig_size: Matplotlib figure size.
+
+    Returns:
+        tuple: (fig, panel_b_var_detected, summary_df)
+    """
+    if panel_b_candidates is None:
+        panel_b_candidates = ["infectiousness_loss_rate", "infectiousness_gain_rate"]
+
+    records = []
+    panel_b_var_detected = None
+
+    for _, row in completed_df.iterrows():
+        task_path = Path(row["task_path"])
+        task_cfg = row.get("task_config", {})
+
+        if not isinstance(task_cfg, dict):
+            continue
+
+        rel_sus = pd.to_numeric(task_cfg.get("rel_sus_unreachable"), errors="coerce")
+        reg_rate = pd.to_numeric(task_cfg.get("clinical_regression_rate"), errors="coerce")
+        inf_loss_rate = pd.to_numeric(task_cfg.get("infectiousness_loss_rate"), errors="coerce")
+
+        if pd.isna(rel_sus) or not np.isclose(rel_sus, target_rel_sus):
+            continue
+
+        idata_path = task_path / "idata.nc"
+        if not idata_path.exists():
+            continue
+
+        idata = az.from_netcdf(idata_path)
+
+        burn_in = 0
+        details_path = task_path / "details.yaml"
+        if details_path.exists():
+            with open(details_path, "r") as f:
+                docs = list(yaml.safe_load_all(f))
+            if len(docs) > 2 and isinstance(docs[2], dict):
+                burn_in = int(docs[2].get("burn_in", 0))
+
+        posterior = idata.posterior
+        if burn_in > 0 and "draw" in posterior.dims:
+            posterior = posterior.isel(draw=slice(burn_in, None))
+
+        if panel_a_var not in posterior.data_vars:
+            continue
+
+        panel_b_var = None
+        for candidate in panel_b_candidates:
+            if candidate in posterior.data_vars:
+                panel_b_var = candidate
+                break
+        if panel_b_var is None:
+            continue
+
+        panel_b_var_detected = panel_b_var
+
+        cp_vals = posterior[panel_a_var].values.flatten()
+        b_vals = posterior[panel_b_var].values.flatten()
+
+        records.append(
+            {
+                "task": row["task"],
+                "reg_rate": float(reg_rate) if not pd.isna(reg_rate) else np.nan,
+                "inf_loss_rate": float(inf_loss_rate) if not pd.isna(inf_loss_rate) else np.nan,
+                "cp_vals": cp_vals,
+                "b_vals": b_vals,
+            }
+        )
+
+    if not records:
+        raise ValueError(
+            f"No matching tasks with idata found for rel_sus = {target_rel_sus} and required posterior variables."
+        )
+
+    records = sorted(records, key=lambda r: (r["reg_rate"], r["inf_loss_rate"], r["task"]))
+
+    base_colors = ["#127624", "#094fa5", "#6d32a4", "#a81334", "#555555", "#aa6f00"]
+    color_cycle = itertools.cycle(base_colors)
+
+    rate_to_color = {}
+    for r in records:
+        key = (r["reg_rate"], r["inf_loss_rate"])
+        if key not in rate_to_color:
+            rate_to_color[key] = next(color_cycle)
+
+    fig, axes = plt.subplots(1, 2, figsize=fig_size, sharey=False)
+
+    panel_specs = [
+        {
+            "ax": axes[0],
+            "vals_key": "cp_vals",
+            "rate_key": "reg_rate",
+            "label_prefix": "reg. rate",
+            "title": "a) Rate of progression from subclinical to clinical TB",
+            "xlabel": panel_a_var,
+        },
+        {
+            "ax": axes[1],
+            "vals_key": "b_vals",
+            "rate_key": "inf_loss_rate",
+            "label_prefix": "reg. rate",
+            "title": "b) Rate of progression from less to more infectious TB",
+            "xlabel": panel_b_var_detected,
+        },
+    ]
+
+    for panel in panel_specs:
+        for r in records:
+            color = rate_to_color[(r["reg_rate"], r["inf_loss_rate"])]
+            label = f"{panel['label_prefix']}={r[panel['rate_key']]:.1f}/y"
+            az.plot_kde(
+                r[panel["vals_key"]],
+                ax=panel["ax"],
+                bw=kde_bw,
+                plot_kwargs={"color": color, "linewidth": 1.8},
+                fill_kwargs={"color": color, "alpha": 0.15},
+                label=label,
+            )
+
+    for panel in panel_specs:
+        panel["ax"].set_title(panel["title"])
+        panel["ax"].set_xlabel(panel["xlabel"])
+        panel["ax"].set_ylabel("Density")
+        panel["ax"].grid(alpha=0.25)
+        panel["ax"].legend(frameon=False, fontsize=9)
+
+    fig.tight_layout()
+
+    summary_df = pd.DataFrame(
+        [{"task": r["task"], "reg_rate": r["reg_rate"], "inf_loss_rate": r["inf_loss_rate"]} for r in records]
+    )
+
+    return fig, panel_b_var_detected, summary_df
 
 
 def plot_posterior_pairs(
