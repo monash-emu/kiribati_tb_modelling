@@ -17,11 +17,11 @@
 \endlastfoot
  raw\_transmission\_rate & Effective rate of transmission (before adjusting for infectiousness) & uniform (0.0001, 0.003) &  \\
  bg\_mixing & Background age-agnostic mixing level & uniform (0.01, 0.05) &  \\
- a\_spread & Spread of assortative mixing pattern (smaller value means more assortativity) & uniform (5.0, 15.0) &  \\
- pc\_strength & Strength of parent-children mixing pattern & uniform (0.1, 2.0) &  \\
+ a\_spread & Spread of assortative mixing pattern (smaller value means more assortativity) & uniform (2.0, 15.0) &  \\
+ pc\_strength & Strength of parent-children mixing pattern & uniform (0.01, 1.0) &  \\
  rel\_sus\_contained & Rel. risk of reinfection from 'contained' compartment (ref. 'mtb-naïve') & uniform (0.2, 0.5) &  \\
  rel\_sus\_cleared & Rel. risk of reinfection from 'cleared' compartment (ref. 'mtb-naïve') & uniform (0.5, 1.0) &  \\
- rel\_sus\_children & Rel. susceptibility to infection for under 15 year-old individuals (ref. 15 and over) & uniform (0.5, 1.0) &  \\
+ rel\_sus\_children & Rel. susceptibility to infection for under 15 year-old individuals (ref. 15 and over) & uniform (0.3, 1.0) &  \\
  rel\_infectiousness\_subclin & Rel. infectiousness of subclinical TB (ref. clinical TB) & 0.5 &  \\
  rel\_infectiousness\_lowinf & Rel. infectiousness of 'less infectious' TB (ref. 'more infectious' TB) & 0.4 &  \\
  progression\_rate\_age0 & Rate of progression from 'incipient' to TB disease (age 0-4) & 2.4 & /year \\
@@ -35,7 +35,7 @@
  clearance\_rate & Rate of transition from 'contained' to 'cleared' (all ages) & uniform (0.01, 0.1) & /year \\
  clinical\_progression\_rate & Rate of progression from subclinical to clinical TB & uniform (0.5, 5.0) & /year \\
  clinical\_regression\_rate & Rate of transition from clinical to subclinical TB & 1.0 & /year \\
- infectiousness\_gain\_rate & Rate of progression from 'less infectious' to 'more infectious' TB & uniform (0.5, 5.0) & /year \\
+ infectiousness\_gain\_rate & Rate of progression from 'less infectious' to 'more infectious' TB & uniform (0.5, 10.0) & /year \\
  infectiousness\_loss\_rate & Rate of transition from 'more infectious' to 'less infectious' TB & 1.0 & /year \\
  tb\_mortality\_rate\_inf & Rate of TB mortality for 'more infectious' clinical disease & 0.389 & /year \\
  tb\_mortality\_rate\_lowinf & Rate of TB mortality for 'less infectious' clinical disease & 0.025 & /year \\
@@ -43,9 +43,9 @@
  recent\_detection\_rate & Annual rate of TB detection in 2020 & uniform (0.1, 5.0) & /year \\
  tx\_duration & Average TB treatment duration & 0.5 & year \\
  pct\_neg\_tx\_death & Percentage of deaths among negative TB treatment outcomes & 40.0 & \% \\
- prev\_se\_incipient & Probability of TST positivity for 'incipient' category & 0.75 &  \\
- prev\_se\_contained & Probability of TST positivity for 'contained' category & 0.75 &  \\
- prev\_se\_cleared & Probability of TST positivity for 'cleared' category & uniform (0.2, 0.5) &  \\
+ prev\_se\_incipient\_tst & Probability of TST positivity for 'incipient' state & 0.75 &  \\
+ prev\_se\_contained\_tst & Probability of TST positivity for 'contained' state & 0.75 &  \\
+ prev\_se\_cleared\_tst & Probability of TST positivity for 'cleared' and 'recovered' states & uniform (0.2, 0.5) &  \\
  prev\_se\_subclin\_lowinf\_pearl & Probability PEARL-positive for 'subclinical' and 'less infectious' category & 1.0 &  \\
  prev\_se\_clin\_lowinf\_pearl & Probability PEARL-positive for 'clinical' and 'less infectious' category & 1.0 &  \\
  prev\_se\_subclin\_inf\_pearl & Probability PEARL-positive for 'subclinical' and 'more infectious' category & 1.0 &  \\
@@ -65,7 +65,10 @@
  tpt\_completion\_perc & TPT completion percentage & 70.0 & \% \\
  rel\_detection\_subclin & Relative detection rate of subclinical TB under passive case finding (ref. clinical TB) & 0.0 &  \\
  passive\_detection\_inflection & Time when passive detection started to scale up & uniform (1990.0, 2020.0) &  \\
- passive\_detection\_shape & Shape parameter of passive detection scale-up profile & uniform (0.05, 0.2) &  \\
- passive\_detection\_past\_frac & Past passive detection rate, as a fraction of the current one & uniform (0.5, 1.0) &  \\
+ passive\_detection\_shape & Shape parameter of passive detection scale-up profile & 0.15 &  \\
+ passive\_detection\_past\_frac & Past passive detection rate, as a fraction of the current one & uniform (0.3, 1.0) &  \\
  infection\_pop\_scale & Exponent for population scaling in force of infection calculation & uniform (0.0, 1.0) &  \\
+ reachable\_pop\_frac & Proportion of population that is reachable by screening interventions & 0.85 &  \\
+ rel\_detection\_unreachable & Relative detection rate of unreachable population under passive case finding (ref. reachable) & 0.5 &  \\
+ rel\_sus\_unreachable & Relative susceptibility to infection of unreachable population (ref. reachable) & 1.5 &  \\
 \end{longtable}
