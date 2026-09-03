@@ -212,6 +212,7 @@ appendix/*
 # But do not ignore these specific files
 !appendix/Makefile
 !appendix/appendix.tex
+!appendix/parameterisation.tex
 !appendix/Readme.md
 !appendix/scripts/
 !appendix/tab-params.tex
