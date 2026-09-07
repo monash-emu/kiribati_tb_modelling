@@ -56,6 +56,11 @@ Age-specific demography and mixing are implemented explicitly to capture the eff
 
 The model is additionally stratified by screening reachability, distinguishing individuals who can participate in active screening from those who are hard to reach. The latter receive no active screening and are assumed to have greater susceptibility to infection and poorer access to passive case detection (Section~\ref{sec:reachability}).
 
+\paragraph{Simulation period and initial conditions.}
+The model is simulated from 1850 to 2035. The initial population size is set to the earliest available WPP estimate for the modelled population (1950), and no population growth is applied before that first data year, so the population size remains constant over the initial period and follows the observed trajectory thereafter (Section~\ref{sec:demog}).
+The epidemic is seeded at the start of the simulation with 100 individuals in the clinical, high-infectiousness disease state (\(D_{CH}\)), with the remainder of the population placed in the M.tb-na\"ive compartment (\(S\)).
+The long period preceding the first calibration data allows the age distribution and the TB epidemic to reach an endemic equilibrium well before the period informed by observations, so that results are insensitive to the size and composition of the initial seed.
+
 \paragraph{Model structure.}
 \begin{figure}[!ht]
 \centering
@@ -504,9 +509,28 @@ b_{k,i}\,E_i +
 \section{Model Calibration}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Data Sources}
+\label{sec:calib-data}
+
+\paragraph{TB notifications.}
+Historical TB notifications were obtained from the Kiribati National Tuberculosis Programme, recorded by locality within South Tarawa. Because the model represents the part of South Tarawa remaining to be screened by PEARL in January 2026, the notification series was restricted to the localities east of, and excluding, Betio, Bairiki and Nanikai. A proportion of notifications each year had no locality recorded; these were allocated to the modelled area in proportion to its share of the South Tarawa population (63.3\%), giving the imputed annual series used for calibration.
+
+\paragraph{Treatment success rate.}
+The proportion of TB treatment episodes ending in success, \(\mathrm{TSR}(t)\), was specified as a time-variant input rather than estimated. Annual reported values for Kiribati were used for 1995--2022, together with a recent value for 2025 and two earlier anchor points representing the era before effective chemotherapy (0\% in 1945) and its early introduction (50\% in 1950). Values are linearly interpolated between these points and held constant outside the range. The treatment success rate determines the recovery rate on treatment and, together with the fixed fraction of unsuccessful episodes ending in death, the relapse and treatment-death rates described in Section~\ref{sec:screening}.
+
+\paragraph{Demographic data.}
+Population size by single year of age (1950--2100), age-specific deaths, and age-specific fertility rates (1950--2023) were taken from the United Nations World Population Prospects, as described in Sections~\ref{sec:demog} and~\ref{sec:mixing-matrix}.
+
+\paragraph{External contact matrix.}
+No empirical contact survey data are available for Kiribati. To constrain the age-mixing matrix estimated within the model (Section~\ref{sec:mixing-matrix}), we generated a synthetic contact matrix using the \texttt{conmat} R package. A contact model was fitted to the POLYMOD contact survey data and the corresponding survey populations, and then used to predict all-setting contact rates for the age distribution of the modelled South Tarawa population in 2025, using the same age breaks as the model. The resulting matrix was normalised by its spectral radius so that it is comparable with the model's normalised mixing matrix, and enters the likelihood through the matrix-distance term described below.
+
+\paragraph{Epidemiological observations from PEARL.}
+Measured TB prevalence (using the PEARL algorithm and using CXR), the proportions of prevalent TB that were subclinical and more infectious, and age-specific TST positivity were obtained from the completed phase of PEARL screening. Because these observations were made among screening participants, they are compared with model outputs restricted to the reachable stratum (Section~\ref{sec:reachability}). An additional, earlier estimate of TST positivity among adults aged 18 years and over was taken from a previous survey conducted in Kiribati.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Calibration Targets and Likelihood}
 
-Calibration targets include TB notifications, TST positivity by age, prevalence by disease form, fraction subclinical, fraction high infectiousness, and a penalty on the distance between the modelled mixing matrix and an external matrix. For prevalence targets, model outputs incorporate test sensitivity parameters. Each target uses a normal likelihood:
+Calibration targets include TB notifications, TST positivity by age, prevalence by disease form, fraction subclinical, fraction high infectiousness, and a penalty on the distance between the modelled mixing matrix and the external matrix described in Section~\ref{sec:calib-data}. For prevalence targets, model outputs incorporate test sensitivity parameters. Each target uses a normal likelihood:
 \[
 y_k \sim \mathcal{N}\big(m_k(\theta), \sigma_k^2\big),
 \]
@@ -519,6 +543,19 @@ with \(\sigma_k\) chosen so that the 95\% interval width is \(\pm 20\%\) of the 
 -
 \frac{1}{2}\log(2\pi\sigma_k^2)\Big).
 \]
+
+\paragraph{Mixing matrix penalty.}
+The estimated mixing matrix is not compared with the external synthetic matrix element by element. Instead, the discrepancy between the two is summarised by a single scalar, the Canberra distance between the spectral-radius-normalised model matrix \(\tilde{\mathbf{C}}(t)\) evaluated in 2025 and the normalised external matrix \(\mathbf{C}^{\mathrm{ext}}\):
+\[
+d(\theta)
+=
+\sum_{i,j}
+\frac{\big|\tilde{C}_{ij} - C^{\mathrm{ext}}_{ij}\big|}
+{\big|\tilde{C}_{ij}\big| + \big|C^{\mathrm{ext}}_{ij}\big| + \varepsilon},
+\]
+with \(\varepsilon = 10^{-10}\) included to avoid division by zero. This relative, element-wise normalisation gives comparable weight to discrepancies in low- and high-contact cells, rather than allowing the largest matrix entries to dominate.
+
+The distance is treated as an additional target with an observed value of zero, \(0 \sim \mathcal{N}\big(d(\theta), \sigma_{\mathrm{mix}}^2\big)\), so that the likelihood penalises mixing patterns that depart from the external matrix. Unlike the epidemiological targets, the standard deviation \(\sigma_{\mathrm{mix}}\) is not fixed but estimated during calibration under a uniform prior on \([5, 20]\). This avoids having to specify \emph{a priori} how closely the model matrix should reproduce a synthetic matrix of unknown accuracy for this setting: the strength of the penalty is instead determined by the extent to which the epidemiological data and the external matrix can be reconciled. The three mixing parameters (background level, assortativity spread, and parent--child strength) are therefore informed jointly by this penalty and by the epidemiological targets.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Metropolis Algorithm}
