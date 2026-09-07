@@ -301,12 +301,14 @@ $\delta_{\mathrm{rec}} = 0.7$, $\phi = 0.5$, $\sigma = 0.15$ and $t^\ast = 2005$
 
 We consider a set of time-limited screening interventions implemented over the year 2026. 
 Each screening programme is defined by a screening algorithm, a target population (by age), and a coverage level. 
-Five coverage levels are explored: low (55\%), medium (65\%), high (75\%), very high (85\%), and maximum (95\%). These correspond to the proportion of the target population reached over the duration of the campaign.
+Three coverage levels are explored: 65\%, 75\% and 85\%. These are expressed as proportions of the \emph{total} target population, that is, with hard-to-reach individuals included in the denominator.
 
-For each programme, the total coverage is translated into a constant per-capita screening rate over the intervention period. Specifically, if \(c\) denotes the target coverage (expressed as a proportion) and \(\Delta t\) the duration of the campaign, 
-the screening rate is defined as \(-\frac{\log(1 - c)}{\Delta t}\).
+Because screening acts only on the reachable stratum (Section~\ref{sec:reachability}), which comprises 85\% of the population, the maximum coverage that can be achieved is 85\%. The highest level considered, 84.5\%, therefore corresponds to screening 99.4\% of reachable individuals in the eligible age groups and is treated as the practical maximum; it is set marginally below 85\% because complete coverage of the reachable stratum would require an infinite screening rate. The two lower levels represent incomplete participation among reachable individuals.
 
-This ensures that, under a constant hazard assumption, a proportion \(c\) of the target population is screened over the intervention period. The screening rate is implemented as a time-varying function that is zero outside the intervention window and constant during the campaign.
+For each programme, the total coverage is translated into a constant per-capita screening rate applied to the reachable stratum over the intervention period. Specifically, if \(c\) denotes the target coverage of the total population (expressed as a proportion), \(\pi\) the reachable fraction, and \(\Delta t\) the duration of the campaign, 
+the screening rate is defined as \(-\frac{\log(1 - c/\pi)}{\Delta t}\).
+
+This ensures that, under a constant hazard assumption, a proportion \(c/\pi\) of the eligible reachable population, and hence a proportion \(c\) of the total target population, is screened over the intervention period. The screening rate is implemented as a time-varying function that is zero outside the intervention window and constant during the campaign.
 
 Screening interventions may act on TB infection or active TB disease states. For each screening algorithm, screened individuals have a probability of being correctly identified defined by the sensitivity of the relevant algorithm for that compartment. 
 For TB screening, positively screened individuals are moved to the treatment compartment (\(T\)). 
@@ -314,35 +316,40 @@ For TPT, only a fraction of the positively screened individuals transition to th
 
 \paragraph{Screening algorithms.}
 
-We consider the following screening tools which all have state-specific sensitivities, some of which are estimated in the calibration while others are fixed based on literature or observations during the PEARL study implementation.
+Sensitivities in the model are properties of a complete \emph{algorithm} rather than of an individual test. For a given algorithm, the sensitivity assigned to a compartment is the probability that a person occupying that state, and screened under that algorithm, is correctly identified and referred for treatment.
+
+We consider the following approaches for the detection of TB disease, in increasing order of intensity:
 
 \begin{itemize}
-    \item \textbf{Symptom screening (SSx)}   
-    \item \textbf{Chest X-ray (CXR)}    
-    \item \textbf{Pluslife tongue swab (PLTS)} 
-    \item \textbf{Xpert}
-    \item \textbf{Tuberculin skin test (TST)} 
+    \item \textbf{Symptom screening (SSx)}: screening on the basis of reported symptoms alone. Clinical disease is assumed to be identified with certainty and subclinical disease not at all, so that this algorithm cannot detect subclinical TB by construction.
+    \item \textbf{Chest X-ray (CXR)}: symptom screening combined with chest X-ray, with bacteriological confirmation of those with an abnormal result. The added value of CXR lies in the detection of subclinical disease, and the corresponding sensitivities are estimated during calibration (separately for less- and more-infectious subclinical TB), informed by the prevalence observed during the completed PEARL screening phase.
+    \item \textbf{PEARL}: symptom screening and CXR, with Xpert MTB/RIF Ultra additionally used as a frontline test in a subset of participants. Operational constraints during implementation meant that frontline Xpert was applied to 35\% of those screened, so the algorithm is represented as a mixture of the two branches:
+    \[
+    s^{\mathrm{PEARL}}_k = 0.35\, s^{\mathrm{Xpert}}_k + 0.65\, s^{\mathrm{CXR}}_k,
+    \qquad k\in\mathcal{K},
+    \]
+    where \(s^{\mathrm{Xpert}}_k\) is the sensitivity of the branch that adds frontline Xpert, fixed at one for all four disease states.
 \end{itemize}
+
+\noindent By construction, \(s^{\mathrm{SSx}}_k \le s^{\mathrm{CXR}}_k \le s^{\mathrm{Xpert}}_k\) for every disease state \(k\).
+
+Screening for non-disease M.tb infection is performed using the \textbf{tuberculin skin test (TST)}, applied to the incipient and contained states with a common probability of a positive result. Individuals identified in this way are offered TPT, and only those completing it transition to the cleared state.
 
 \paragraph{Age targeting.}
 Screening programmes are targeted to specific age groups by applying multiplicative coverage adjustments during model age stratification. Age groups not targeted by a given programme have zero screening rate.
 
 \paragraph{Scenario structure.}
-We consider 25 scenarios grouped into five sets:
+We consider three screening algorithms:
 
 \begin{itemize}
-    \item \textbf{Scenarios 1--5 (PEARL):} PEARL algorithm as implemented during the first phase of the PEARL study. Individuals aged 10 years and above receive CXR combined with Xpert testing (in 35\% of individuals), while children aged 3--9 years receive symptom screening and TST is applied to individuals aged 3 years and above.
-    
-    \item \textbf{Scenarios 6--10 (CXR-TST):} Xpert is removed; CXR is used for individuals aged 10 years and above, with symptom screening for ages 3--9 years and TST for ages 3 years and above.
-    
-    \item \textbf{Scenarios 11--15 (CXR-TST, 10+ only):} Screening is restricted to individuals aged 10 years and above, using CXR and TST; no screening is performed in children under 10 years.
-    
-    \item \textbf{Scenarios 16--20 (CXR only, 10+):} Screening is further simplified to CXR only for individuals aged 10 years and above.
-    
-    \item \textbf{Scenarios 21--25 (CXR-PLTS-TST):} Tongue swab testing (PLTS) replaces Xpert; CXR and PLTS are used for individuals aged 10 years and above, with symptom screening for ages 3--9 years and TST for ages 3 years and above.
+    \item \textbf{PEARL:} the algorithm implemented during the completed phase of the PEARL study. Individuals aged 10 years and above receive CXR, with Xpert additionally used as a frontline test in 35\% of them, reflecting operational constraints on its implementation. Children aged 3--9 years receive symptom screening, and TST-guided TPT is offered to all individuals aged 3 years and above.
+
+    \item \textbf{CXR-TST:} Xpert is removed from frontline screening. CXR is used for individuals aged 10 years and above, with symptom screening for ages 3--9 years and TST-guided TPT for ages 3 years and above.
+
+    \item \textbf{Disease screening only:} both Xpert and TST-guided TPT are removed, and screening is restricted to CXR among individuals aged 10 years and above. No screening is performed in children under 10 years, and no preventive treatment is provided.
 \end{itemize}
 
-Within each group, the five coverage levels are applied, resulting in a total of 25 scenarios. This framework allows us to assess the incremental impact of alternative diagnostic strategies, the removal of specific tools (e.g.\ Xpert or TST), and the effect of restricting screening to older age groups.
+Each algorithm is combined with each of the three coverage levels, giving a total of nine screening scenarios. These are compared with a baseline scenario in which no active screening is implemented. This framework allows us to assess the incremental population-level contribution of frontline Xpert, of TST-guided preventive treatment, and of increasing screening coverage.
 
 \subsection{Treatment outcomes}
 During treatment, individuals may experience three mutually exclusive outcomes: successful recovery, relapse, or death. Recovery occurs at a rate depending on the time-varying treatment success rate:
