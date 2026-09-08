@@ -29,3 +29,39 @@ Parameters governing TB mortality, self-recovery, and treatment relapse were inf
 The model additionally includes a transmission-scaling parameter that allows a continuum between frequency-dependent and density-dependent transmission. This parameter was introduced to account for uncertainty regarding the relationship between population density and transmission intensity in Kiribati, where increasing population density and limited habitable land may plausibly influence contact patterns and transmission risk. The parameter was assigned a uniform prior spanning the full range between purely frequency-dependent and purely density-dependent transmission.
 
 \subsection{Programmatic parameters}
+
+The structural representation of passive detection, treatment and screening is described in Section~\ref{sec:screening}, and that of screening reachability in Section~\ref{sec:reachability}. This section documents the values assigned to the associated parameters, the evidence used to inform them, and the reasons for estimating some during calibration while fixing others.
+
+\subsubsection{Passive detection}
+
+No direct estimate of the passive detection rate was available for Kiribati. The recent detection level (\(\delta_{\mathrm{rec}}\)), the inflection time of the scale-up (\(t^\ast\)) and the past-to-recent ratio (\(\phi\)) were therefore assigned uninformative uniform priors and estimated during calibration against the historical notification series (Table~\ref{tab-params}). The prior on \(\delta_{\mathrm{rec}}\) spans two orders of magnitude, corresponding to an average delay from onset of clinical disease to treatment initiation ranging from around two months to around ten years, and is therefore not expected to constrain the posterior.
+
+The steepness parameter \(\sigma\) was fixed at 0.15 per year rather than estimated. The timing and the abruptness of the scale-up are only weakly separable given a single notification time series, and allowing both to vary introduced strong correlation between the two parameters without improving the fit.
+
+The relative detection rate for subclinical disease was fixed at zero and the relative detection rate in the hard-to-reach stratum at 0.5, following the assumptions set out in Sections~\ref{sec:screening} and~\ref{sec:reachability}. Neither quantity is identifiable from the available data.
+
+\subsubsection{Treatment}
+
+The average treatment duration \(\tau\) was fixed at 0.5 years, corresponding to the standard six-month first-line regimen.
+
+The treatment success rate \(\mathrm{TSR}(t)\) was taken directly from the annual treatment outcomes reported for Kiribati [REFERENCE PLACEHOLDER] and implemented as a linear interpolation between the reported values, which have ranged between 83\% and 95\% since 1995. Outcomes were not reported before that date, so the series was extended backwards from an assumed value of zero in 1945, preceding the availability of effective chemotherapy, to 50\% in 1950. These historical values are not intended as estimates of programme performance but serve to prevent the model from attributing an implausible treatment benefit to the pre-programmatic era; the calibration targets are insensitive to them.
+
+The fraction of negative outcomes resulting in death, \(f_{\mathrm{neg}}\), was fixed at 40\%, approximating the proportion of unsuccessful outcomes recorded as deaths in the treatment outcomes reported to WHO for Kiribati [REFERENCE PLACEHOLDER]. The remaining unsuccessful outcomes, comprising treatment failure, loss to follow-up and cases not evaluated, are returned to active disease in the model. This proportion fluctuates markedly between years because the annual cohorts are small, so a single representative value was used rather than a time-varying series, and it was not estimated during calibration.
+
+\subsubsection{Reachability parameters}
+
+The reachable fraction \(\pi\) was fixed at 0.85, based on participation observed during the completed phase of the PEARL study. The relative susceptibility of the hard-to-reach stratum (\(\theta_{\mathrm{sus}} = 1.5\)) and its relative passive detection rate (\(\theta_{\mathrm{det}} = 0.5\)) are not informed by the available data and could not be estimated jointly with the transmission and detection parameters, as they act on the same flows. They were therefore fixed at plausible values, and \(\theta_{\mathrm{sus}}\) was varied in sensitivity analysis.
+
+\subsubsection{Screening algorithm sensitivities}
+
+The sensitivity assigned to each screening algorithm for each model state is reported in Table~\ref{tab-screening-sens}.
+
+The sensitivities of symptom screening follow directly from the definition of clinical and subclinical disease used in the model and are therefore fixed at one and zero respectively. Chest X-ray was likewise assigned a sensitivity of one for clinical disease. Its sensitivity to subclinical disease is considerably more uncertain and was estimated during calibration, with separate uniform priors for the less- and more-infectious subclinical states. The lower and wider prior range specified for less-infectious subclinical disease reflects the expectation that radiographic abnormalities are both less extensive and less consistently identified in individuals with limited bacillary burden [REFERENCE PLACEHOLDER]. These two parameters are informed by the prevalence of bacteriologically confirmed and X-ray-suggestive disease observed during the completed PEARL screening phase. The addition of frontline Xpert was assigned a sensitivity of one for all four disease states, so that the PEARL algorithm is bounded above by complete detection of prevalent disease.
+
+The probability of a positive TST was fixed at 0.75 for both the incipient and contained infection states [REFERENCE PLACEHOLDER]. The corresponding probability among individuals who have cleared infection or recovered from disease was estimated during calibration, since the persistence of tuberculin reactivity after clearance is poorly characterised; this parameter is informed by the TST positivity measured during the PEARL screening phase and, in combination with the infection-state values, determines the mapping between modelled infection prevalence and observed TST positivity.
+
+The probability of completing preventive treatment once identified as TST-positive was fixed at 0.7, consistent with completion levels observed during implementation [REFERENCE PLACEHOLDER]. Because completion is a key determinant of the benefit attributable to the TPT arm of the campaign, a sensitivity analysis was run assuming a completion probability of 0.6.
+
+\subsubsection{Screening coverage}
+
+Coverage levels of 65\%, 75\% and 84.5\% of the total population were examined. These are scenario assumptions rather than estimated quantities: the lower two represent plausible degrees of incomplete participation, while the highest corresponds to screening 99.4\% of the reachable stratum and is treated as the practical upper bound achievable without extending the campaign to the hard-to-reach population (Section~\ref{sec:reachability}).

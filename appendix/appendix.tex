@@ -287,7 +287,9 @@ Because the epidemiological observations collected during the completed PEARL sc
 \subsection{Detection}
 
 \paragraph{Passive detection.}
-Passive case finding applies \emph{only to clinical disease}. Subclinical disease is not detected passively. Denote the time-varying passive detection profile by \(\delta(t)\), which follows a smooth hyperbolic-tangent scale-up from an earlier (lower) level to a recent level:
+Passive case finding applies \emph{only to clinical disease}. Subclinical disease is asymptomatic by definition and is therefore assumed not to prompt care seeking, so that individuals with subclinical TB can enter treatment only after progressing to clinical disease, or through active screening.
+
+The passive detection rate is allowed to vary over time, because diagnostic capacity and access to care in Kiribati have strengthened progressively over recent decades, and a constant rate would be difficult to reconcile with the historical notification series. Denote the time-varying passive detection profile by \(\delta(t)\), which follows a smooth hyperbolic-tangent scale-up from an earlier (lower) level to a recent level:
 \[
 \delta(t)
 =
@@ -352,6 +354,8 @@ We consider the following approaches for the detection of TB disease, in increas
 
 Screening for non-disease M.tb infection is performed using the \textbf{tuberculin skin test (TST)}, applied to the incipient and contained states with a common probability of a positive result. Individuals identified in this way are offered TPT, and only those completing it transition to the cleared state.
 
+TST reactivity is not restricted to these two states. Individuals who have cleared infection or recovered from disease may also react to the test, and individuals with active TB are assumed to react with probability one. These states are therefore included when computing the modelled TST positivity used as a calibration target, but no preventive treatment flow originates from them: individuals who have cleared or recovered are not at risk of progression and would derive no benefit from TPT, while those with active disease would be identified and treated through the concurrent disease-screening arm of the same campaign.
+
 \paragraph{Age targeting.}
 Screening programmes are targeted to specific age groups by applying multiplicative coverage adjustments during model age stratification. Age groups not targeted by a given programme have zero screening rate.
 
@@ -369,7 +373,7 @@ We consider three screening algorithms:
 Each algorithm is combined with each of the three coverage levels, giving a total of nine screening scenarios. These are compared with a baseline scenario in which no active screening is implemented. This framework allows us to assess the incremental population-level contribution of frontline Xpert, of TST-guided preventive treatment, and of increasing screening coverage.
 
 \subsection{Treatment outcomes}
-During treatment, individuals may experience three mutually exclusive outcomes: successful recovery, relapse, or death. Recovery occurs at a rate depending on the time-varying treatment success rate:
+During treatment, individuals may experience three mutually exclusive outcomes: successful recovery, relapse, or death. Relapse here encompasses all unsuccessful outcomes other than death, including treatment failure and loss to follow-up; these individuals return to the subclinical, less-infectious disease state and remain subject to subsequent detection. Recovery occurs at a rate depending on the time-varying treatment success rate:
 \[
 \text{Recovery: } \quad \text{rate} = \frac{\text{TSR}(t)}{\tau},
 \]
