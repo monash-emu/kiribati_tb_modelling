@@ -259,24 +259,24 @@ Population-wide screening never reaches the entire population, and the individua
 \paragraph{Population split.}
 The proportion of the population in the screening-reachable stratum is denoted \(\pi\) and is fixed at 0.85, based on participation observed during the completed phase of the PEARL study. The initial population is split between the two strata according to \(\pi\) and \(1-\pi\) within every compartment and age group.
 
-The stratum sizes are held at these proportions over time. Because there are no transitions between the reachable and unreachable strata, this is achieved by (i) splitting the additional births used to reproduce population growth between the two strata according to \(\pi\) and \(1-\pi\), and (ii) returning all deaths (background, TB-related, and on-treatment) to the M.tb-na\"ive compartment of the youngest age group \emph{within the same reachability stratum} from which they originated. Reachability is therefore a fixed, lifelong attribute in the model, and the fraction of the population that is hard to reach does not drift as the epidemic or the interventions evolve.
-Mixing between the reachable and unreachable strata is assumed to be homogeneous. In the absence of data on the contact patterns of individuals not reached by screening, this is a deliberately conservative assumption: assortative mixing within the unreachable stratum would be expected to further concentrate residual transmission in that group.
+The stratum sizes are held at these proportions over time. Because there are no transitions between the screening-reachable and hard-to-reach strata, this is achieved by (i) splitting the additional births used to reproduce population growth between the two strata according to \(\pi\) and \(1-\pi\), and (ii) returning all deaths (background, TB-related, and on-treatment) to the M.tb-na\"ive compartment of the youngest age group \emph{within the same reachability stratum} from which they originated. Reachability is therefore a fixed, lifelong attribute in the model, and the fraction of the population that is hard to reach does not drift as the epidemic or the interventions evolve.
+Mixing between the screening-reachable and hard-to-reach strata is assumed to be homogeneous. In the absence of data on the contact patterns of individuals not reached by screening, this is a deliberately conservative assumption: assortative mixing within the hard-to-reach stratum would be expected to further concentrate residual transmission in that group.
 
 \paragraph{Epidemiological differences between strata.}
-Barriers to participating in screening are unlikely to occur in isolation and may coincide with living conditions or health-seeking behaviours that also affect TB risk and access to routine diagnosis. Two multiplicative adjustments are therefore applied to the unreachable stratum, relative to the reachable stratum:
+Barriers to participating in screening are unlikely to occur in isolation and may coincide with living conditions or health-seeking behaviours that also affect TB risk and access to routine diagnosis. Two multiplicative adjustments are therefore applied to the hard-to-reach stratum, relative to the screening-reachable stratum:
 
 \begin{itemize}
-    \item \textbf{Susceptibility to infection.} All infection and reinfection flows (from \(S\), \(C\), \(X\) and \(R\)) are multiplied by \(\theta_{\mathrm{sus}}\) (\texttt{rel\_sus\_unreachable}) in the unreachable stratum. The base-case value is 1.5, i.e.\ hard-to-reach individuals are assumed to acquire infection at 1.5 times the rate of reachable individuals experiencing the same force of infection. This factor is applied to the susceptibility side of transmission only; the relative infectiousness of individuals with TB does not differ by stratum.
-    \item \textbf{Passive detection.} The time-varying passive detection rate \(\delta(t)\) (Section~\ref{sec:screening}) is multiplied by \(\theta_{\mathrm{det}}\) (\texttt{rel\_detection\_unreachable}) in the unreachable stratum. The base-case value is 0.5, reflecting an assumption of reduced access to routine diagnostic services in the same population that is difficult to reach through active screening.
+    \item \textbf{Susceptibility to infection.} All infection and reinfection flows (from \(S\), \(C\), \(X\) and \(R\)) are multiplied by \(\theta_{\mathrm{sus}}\) (\texttt{rel\_sus\_unreachable}) in the hard-to-reach stratum. The base-case value is 1.5, i.e.\ hard-to-reach individuals are assumed to acquire infection at 1.5 times the rate of screening-reachable individuals experiencing the same force of infection. This factor is applied to the susceptibility side of transmission only; the relative infectiousness of individuals with TB does not differ by stratum.
+    \item \textbf{Passive detection.} The time-varying passive detection rate \(\delta(t)\) (Section~\ref{sec:screening}) is multiplied by \(\theta_{\mathrm{det}}\) (\texttt{rel\_detection\_unreachable}) in the hard-to-reach stratum. The base-case value is 0.5, reflecting an assumption of reduced access to routine diagnostic services in the same population that is difficult to reach through active screening.
 \end{itemize}
 
 \noindent Both parameters are fixed rather than estimated, as the available data do not inform them; \(\theta_{\mathrm{sus}}\) is varied in sensitivity analysis.
 
 \paragraph{Access to screening.}
-All active screening flows, for both TB disease and non-disease M.tb infection, are set to zero in the unreachable stratum. Screening programmes therefore act exclusively on the screening-reachable stratum. As a consequence, the maximum achievable population coverage is \(\pi\): a nominal coverage of 85\% of the total population corresponds to screening essentially the whole reachable stratum, whereas lower nominal coverage levels represent incomplete participation among reachable individuals (Section~\ref{sec:screening}).
+All active screening flows, for both TB disease and non-disease M.tb infection, are set to zero in the hard-to-reach stratum. Screening programmes therefore act exclusively on the screening-reachable stratum. As a consequence, the maximum achievable population coverage is \(\pi\): a nominal coverage of 85\% of the total population corresponds to screening essentially the whole screening-reachable stratum, whereas lower nominal coverage levels represent incomplete participation among screening-reachable individuals (Section~\ref{sec:screening}).
 
 \paragraph{Calibration and reporting.}
-Because the epidemiological observations collected during the completed PEARL screening phase were made among participants, the corresponding calibration targets (measured TB prevalence and TST positivity) are compared with model outputs restricted to the reachable stratum. Historical notifications, which arise from passive detection in the whole population, are compared with model outputs aggregated across both strata. Projected burden outcomes are likewise reported for the entire modelled population unless otherwise stated, and the share of TB incidence arising from the unreachable stratum is tracked as an additional output.
+Because the epidemiological observations collected during the completed PEARL screening phase were made among participants, the corresponding calibration targets (measured TB prevalence and TST positivity) are compared with model outputs restricted to the screening-reachable stratum. Historical notifications, which arise from passive detection in the whole population, are compared with model outputs aggregated across both strata. Projected burden outcomes are likewise reported for the entire modelled population unless otherwise stated, and the share of TB incidence arising from the hard-to-reach stratum is tracked as an additional output.
 
 
 
@@ -322,12 +322,12 @@ We consider a set of time-limited screening interventions implemented over the y
 Each screening programme is defined by a screening algorithm, a target population (by age), and a coverage level. 
 Three coverage levels are explored: 65\%, 75\% and 85\%. These are expressed as proportions of the \emph{total} target population, that is, with hard-to-reach individuals included in the denominator.
 
-Because screening acts only on the reachable stratum (Section~\ref{sec:reachability}), which comprises 85\% of the population, the maximum coverage that can be achieved is 85\%. The highest level considered, 84.5\%, therefore corresponds to screening 99.4\% of reachable individuals in the eligible age groups and is treated as the practical maximum; it is set marginally below 85\% because complete coverage of the reachable stratum would require an infinite screening rate. The two lower levels represent incomplete participation among reachable individuals.
+Because screening can only reach the 85\% of the population classified as screening-reachable (Section~\ref{sec:reachability}), this represents the theoretical maximum population coverage. In practice, the scenarios labelled as ``85\% coverage'' are effectively implemented using 84.5\% coverage, corresponding to screening approximately 99.5\% of screening-reachable individuals in the eligible age groups. This small adjustment avoids requiring complete coverage of the screening-reachable population, which would require an infinite screening rate. The two lower levels represent incomplete participation among screening-reachable individuals.
 
-For each programme, the total coverage is translated into a constant per-capita screening rate applied to the reachable stratum over the intervention period. Specifically, if \(c\) denotes the target coverage of the total population (expressed as a proportion), \(\pi\) the reachable fraction, and \(\Delta t\) the duration of the campaign, 
+For each programme, the total coverage is translated into a constant per-capita screening rate applied to the screening-reachable stratum over the intervention period. Specifically, if \(c\) denotes the target coverage of the total population (expressed as a proportion), \(\pi\) the screening-reachable fraction, and \(\Delta t\) the duration of the campaign, 
 the screening rate is defined as \(-\frac{\log(1 - c/\pi)}{\Delta t}\).
 
-This ensures that, under a constant hazard assumption, a proportion \(c/\pi\) of the eligible reachable population, and hence a proportion \(c\) of the total target population, is screened over the intervention period. The screening rate is implemented as a time-varying function that is zero outside the intervention window and constant during the campaign.
+This ensures that, under a constant hazard assumption, a proportion \(c/\pi\) of the eligible screening-reachable population, and hence a proportion \(c\) of the total target population, is screened over the intervention period. The screening rate is implemented as a time-varying function that is zero outside the intervention window and constant during the campaign.
 
 Screening interventions may act on TB infection or active TB disease states. For each screening algorithm, screened individuals have a probability of being correctly identified defined by the sensitivity of the relevant algorithm for that compartment. 
 For TB screening, positively screened individuals are moved to the treatment compartment (\(T\)). 
@@ -408,7 +408,7 @@ These equations ensure that the sum of recovery, relapse, and treatment-death pr
 \label{sec:odes}
 
 \subsection{Notations}
-We present the ODEs for a generic age group \(i\in\{1,\dots,G\}\) and reachability stratum \(s\in\{\mathrm{r},\mathrm{u}\}\), where \(\mathrm{r}\) denotes screening-reachable and \(\mathrm{u}\) hard-to-reach individuals (unreachable by screening, Section~\ref{sec:reachability}). Every compartment therefore carries both indices, e.g.\ \(S_{i,s}\). No flow connects the two reachability strata, so \(s\) is a fixed attribute of an individual and the strata are coupled only through the shared force of infection.
+We present the ODEs for a generic age group \(i\in\{1,\dots,G\}\) and reachability stratum \(s\in\{\mathrm{r},\mathrm{u}\}\), where \(\mathrm{r}\) denotes screening-reachable and \(\mathrm{u}\) hard-to-reach individuals (Section~\ref{sec:reachability}). Every compartment therefore carries both indices, e.g.\ \(S_{i,s}\). No flow connects the two reachability strata, so \(s\) is a fixed attribute of an individual and the strata are coupled only through the shared force of infection.
 
 Let \(\alpha_i(t)\) be the ageing rate from group \(i\) to \(i{+}1\) (\(\alpha_G=0\)), and \(\mu_i(t)\) the all-cause mortality rate; neither depends on \(s\). For any compartment variable \(U\in\{S,E,C,X,D_{SL},D_{SH},D_{CL},D_{CH},T,R\}\), define the (within-stratum) ageing operator
 \[
@@ -440,7 +440,7 @@ The three multiplicative adjustments that distinguish the two strata (Section~\r
 applied respectively to all infection and reinfection flows, to the passive detection rate, and to all active screening flows. All other natural-history, treatment and demographic parameters are shared between strata.
 
 \paragraph{Entries into the model.}
-Let \(\mathcal{B}(t)\) be the additional entry rate used to reproduce the observed population growth, allocated between strata according to the fixed reachable fraction \(\pi\), with \(\pi_{\mathrm{r}}=\pi\) and \(\pi_{\mathrm{u}}=1-\pi\). All deaths are recycled into the M.tb-na\"ive compartment of the youngest age group of the stratum in which they occurred, giving the stratum-specific re-entry term
+Let \(\mathcal{B}(t)\) be the additional entry rate used to reproduce the observed population growth, allocated between strata according to the fixed screening-reachable fraction \(\pi\), with \(\pi_{\mathrm{r}}=\pi\) and \(\pi_{\mathrm{u}}=1-\pi\). All deaths are recycled into the M.tb-na\"ive compartment of the youngest age group of the stratum in which they occurred, giving the stratum-specific re-entry term
 \[
 \mathcal{D}_s(t) =
 \sum_{i=1}^{G}
@@ -450,7 +450,7 @@ Let \(\mathcal{B}(t)\) be the additional entry rate used to reproduce the observ
 + \mu^{TX}_i\, T_{i,s}
 \Bigg].
 \]
-Together, these two devices keep the total population on its observed trajectory while holding the reachable and hard-to-reach fractions constant at \(\pi\) and \(1-\pi\).
+Together, these two devices keep the total population on its observed trajectory while holding the screening-reachable and hard-to-reach fractions constant at \(\pi\) and \(1-\pi\).
 
 \paragraph{Early infection parameters (age-specific).}
 For each age group \(i\), let \(\gamma_i\) be the containment rate from \(E\) to \(C\), \(\epsilon_i\) the total progression rate from \(E\) to subclinical disease. The proportion progressing initially to ``high infectiousness subclinical'' rather than ``low infectiousness subclinical'' is denoted by \(p\). Then progression risks are \(\epsilon_i(1-p)\) to \(D_{SL}\) and \(\epsilon_i p\) to \(D_{SH}\). From \(C\), let \(\xi\) be the clearance rate and \(\omega\) the breakdown rate.
@@ -467,7 +467,7 @@ and \(\tilde{k}\) to denote the state obtained by switching the infectiousness s
 Self-recovery from subclinical states occurs at rate \(\rho_{SC}\).
 
 \paragraph{Screening and passive detection hazards.}
-Let \(\zeta_{k,i}(t)\) denote the (time- and age-specific) \emph{screening} detection hazard applied to disease state \(k\) in the reachable stratum. Screening is unavailable to the hard-to-reach stratum and passive detection is reduced there, while passive detection applies only to \emph{clinical} disease. The total detection hazard is therefore
+Let \(\zeta_{k,i}(t)\) denote the (time- and age-specific) \emph{screening} detection hazard applied to disease state \(k\) in the screening-reachable stratum. Screening is unavailable to the hard-to-reach stratum and passive detection is reduced there, while passive detection applies only to \emph{clinical} disease. The total detection hazard is therefore
 \[
 \eta_{k,i,s}^{\text{tot}}(t) =
 \begin{cases}
@@ -476,7 +476,7 @@ Let \(\zeta_{k,i}(t)\) denote the (time- and age-specific) \emph{screening} dete
 \end{cases}
 \]
 Since \(\theta^{\mathrm{scr}}_{\mathrm{u}}=0\), this reduces to \(\eta^{\mathrm{tot}}_{k,i,\mathrm{u}}=0\) for subclinical states and to \(\theta_{\mathrm{det}}\,\delta(t)\) for clinical states in the hard-to-reach stratum.
-The rate of TPT in the reachable stratum is denoted \(u^{\mathrm{TPT}}_i(t)\) and combines the TST screening rate and the preventive treatment completion rate; in the hard-to-reach stratum it is set to zero, so that
+The rate of TPT in the screening-reachable stratum is denoted \(u^{\mathrm{TPT}}_i(t)\) and combines the TST screening rate and the preventive treatment completion rate; in the hard-to-reach stratum it is set to zero, so that
 \[
 u^{\mathrm{TPT}}_{i,s}(t) = \theta^{\mathrm{scr}}_s\, u^{\mathrm{TPT}}_i(t).
 \]
@@ -601,7 +601,7 @@ Population size by single year of age (1950--2100), age-specific deaths, and age
 No empirical contact survey data are available for Kiribati. To constrain the age-mixing matrix estimated within the model (Section~\ref{sec:mixing-matrix}), we generated a synthetic contact matrix using the \texttt{conmat} R package. A contact model was fitted to the POLYMOD contact survey data and the corresponding survey populations, and then used to predict all-setting contact rates for the age distribution of the modelled South Tarawa population in 2025, using the same age breaks as the model. The resulting matrix was normalised by its spectral radius so that it is comparable with the model's normalised mixing matrix, and enters the likelihood through the matrix-distance term described below.
 
 \paragraph{Epidemiological observations from PEARL.}
-Measured TB prevalence (using the PEARL algorithm and using CXR), the proportions of prevalent TB that were subclinical and more infectious, and age-specific TST positivity were obtained from the completed phase of PEARL screening. Because these observations were made among screening participants, they are compared with model outputs restricted to the reachable stratum (Section~\ref{sec:reachability}). An additional, earlier estimate of TST positivity among adults aged 18 years and over was taken from a previous survey conducted in Kiribati.
+Measured TB prevalence (using the PEARL algorithm and using CXR), the proportions of prevalent TB that were subclinical and more infectious, and age-specific TST positivity were obtained from the completed phase of PEARL screening. Because these observations were made among screening participants, they are compared with model outputs restricted to the screening-reachable stratum (Section~\ref{sec:reachability}). An additional, earlier estimate of TST positivity among adults aged 18 years and over was taken from a previous survey conducted in Kiribati.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Calibration Targets and Likelihood}
