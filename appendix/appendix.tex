@@ -131,12 +131,12 @@ We interpolate between frequency- and density-dependent transmission using the e
 \frac{I^{\mathrm{eff}}_j(t)}{N_j(t)^{\kappa}},
 \]
 where \(\tilde{C}(t)\) is the spectral-radius-normalised age-mixing matrix (Section~\ref{sec:mixing-matrix}).  Here \(N_{\mathrm{ref}}\) denotes the total population in year 2020 and is included purely as a scaling constant for more efficient calibration. This rescaling stabilises the magnitude of the transmission coefficient \(\beta_0\) across different values of \(\kappa\), preventing its calibrated value from varying by orders of magnitude as the dependence on population size changes.
-The effective infectious pool and the population size of age group \(j\) are both aggregated over the two reachability strata \(s\in\mathcal{S}=\{\mathrm{r},\mathrm{u}\}\):
+The effective infectious pool and the population size of age group \(j\) are both aggregated over the two reachability strata \(s\in\{\mathrm{r},\mathrm{u}\}\):
 \[
 I^{\mathrm{eff}}_j(t) =
-\sum_{s\in\mathcal{S}}\ \sum_{k\in\mathcal{K}} w_k\, D_{k,j,s}(t),
+\sum_{s}\ \sum_{k\in\mathcal{K}} w_k\, D_{k,j,s}(t),
 \qquad
-N_j(t) = \sum_{s\in\mathcal{S}} N_{j,s}(t).
+N_j(t) = \sum_{s} N_{j,s}(t).
 \]
 Infectiousness weights \(w_k\) do not differ by reachability stratum; only susceptibility does, through the multiplier \(\theta^{\mathrm{sus}}_s\) introduced in Section~\ref{sec:reachability}.
 Individuals $<15$\,y contribute zero infectiousness (weights set to zero in those age groups).
@@ -342,13 +342,13 @@ We consider the following approaches for the detection of TB disease, in increas
     \item \textbf{Chest X-ray (CXR)}: symptom screening combined with chest X-ray, with bacteriological confirmation of those with an abnormal result. The added value of CXR lies in the detection of subclinical disease, and the corresponding sensitivities are estimated during calibration (separately for less- and more-infectious subclinical TB), informed by the prevalence observed during the completed PEARL screening phase.
     \item \textbf{PEARL}: symptom screening and CXR, with Xpert MTB/RIF Ultra additionally used as a frontline test in a subset of participants. Operational constraints during implementation meant that frontline Xpert was applied to 35\% of those screened, so the algorithm is represented as a mixture of the two branches:
     \[
-    s^{\mathrm{PEARL}}_k = 0.35\, s^{\mathrm{Xpert}}_k + 0.65\, s^{\mathrm{CXR}}_k,
+    s^{\mathrm{PEARL}}_k = 0.35\, s^{\mathrm{Xpert+CXR}}_k + 0.65\, s^{\mathrm{CXR}}_k,
     \qquad k\in\mathcal{K},
     \]
-    where \(s^{\mathrm{Xpert}}_k\) is the sensitivity of the branch that adds frontline Xpert, fixed at one for all four disease states.
+    where \(s^{\mathrm{Xpert+CXR}}_k\) is the sensitivity of the branch in which frontline Xpert is added to symptom screening and CXR, fixed at one for all four disease states. The weights are the proportions of participants allocated to each branch, so that \(s^{\mathrm{PEARL}}_k\) is the expected probability of detection for a randomly selected person screened under the programme as it was actually delivered, rather than under either branch in isolation.
 \end{itemize}
 
-\noindent By construction, \(s^{\mathrm{SSx}}_k \le s^{\mathrm{CXR}}_k \le s^{\mathrm{Xpert}}_k\) for every disease state \(k\).
+\noindent By construction, \(s^{\mathrm{SSx}}_k \le s^{\mathrm{CXR}}_k \le s^{\mathrm{Xpert+CXR}}_k\) for every disease state \(k\).
 
 Screening for non-disease M.tb infection is performed using the \textbf{tuberculin skin test (TST)}, applied to the incipient and contained states with a common probability of a positive result. Individuals identified in this way are offered TPT, and only those completing it transition to the cleared state.
 
@@ -404,7 +404,7 @@ These equations ensure that the sum of recovery, relapse, and treatment-death pr
 \label{sec:odes}
 
 \subsection{Notations}
-We present the ODEs for a generic age group \(i\in\{1,\dots,G\}\) and reachability stratum \(s\in\mathcal{S}=\{\mathrm{r},\mathrm{u}\}\), where \(\mathrm{r}\) denotes screening-reachable and \(\mathrm{u}\) hard-to-reach individuals (unreachable by screening, Section~\ref{sec:reachability}). Every compartment therefore carries both indices, e.g.\ \(S_{i,s}\). No flow connects the two reachability strata, so \(s\) is a fixed attribute of an individual and the strata are coupled only through the shared force of infection.
+We present the ODEs for a generic age group \(i\in\{1,\dots,G\}\) and reachability stratum \(s\in\{\mathrm{r},\mathrm{u}\}\), where \(\mathrm{r}\) denotes screening-reachable and \(\mathrm{u}\) hard-to-reach individuals (unreachable by screening, Section~\ref{sec:reachability}). Every compartment therefore carries both indices, e.g.\ \(S_{i,s}\). No flow connects the two reachability strata, so \(s\) is a fixed attribute of an individual and the strata are coupled only through the shared force of infection.
 
 Let \(\alpha_i(t)\) be the ageing rate from group \(i\) to \(i{+}1\) (\(\alpha_G=0\)), and \(\mu_i(t)\) the all-cause mortality rate; neither depends on \(s\). For any compartment variable \(U\in\{S,E,C,X,D_{SL},D_{SH},D_{CL},D_{CH},T,R\}\), define the (within-stratum) ageing operator
 \[
@@ -514,7 +514,9 @@ b_{k,i} =
 
 \subsection{System of ODEs}
 
-\( \forall i\in\{1,\dots,G\}\) and \(\forall s\in\mathcal{S}=\{\mathrm{r},\mathrm{u}\}\):
+Recall that \(i\) indexes the age group and \(s\) the reachability stratum (\(\mathrm{r}\): screening-reachable, \(\mathrm{u}\): hard-to-reach).
+
+\( \forall i\in\{1,\dots,G\}\) and \(\forall s\in\{\mathrm{r},\mathrm{u}\}\):
 \begin{align}
 \frac{dS_{i,s}}{dt} &=
 \mathbf{1}_{\{i=1\}}\,\big(\pi_s\,\mathcal{B}(t) + \mathcal{D}_s(t)\big)
@@ -652,6 +654,8 @@ Each model configuration is calibrated independently, and the configurations are
 
 
 \input{parameterisation.tex}
+
+\input{tab-screening-sens.tex}
  
 % Code-like names appear only in the parameter table included below.
 \small 
