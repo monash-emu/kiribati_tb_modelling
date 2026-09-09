@@ -207,17 +207,21 @@ remote_cluster/outputs/
 # GIF animation files
 *.gif
 
-# Ignore everything in appendix/
-appendix/*
-# But do not ignore these specific files
-!appendix/Makefile
-!appendix/appendix.tex
-!appendix/parameterisation.tex
-!appendix/Readme.md
-!appendix/scripts/
-!appendix/tab-params.tex
-!appendix/figures/
-!appendix/figures/tb_model.png
+# Appendix: track the sources, ignore only what latexmk/pdflatex generate
+appendix/*.aux
+appendix/*.bbl
+appendix/*.bcf
+appendix/*.blg
+appendix/*.fdb_latexmk
+appendix/*.fls
+appendix/*.lof
+appendix/*.lot
+appendix/*.out
+appendix/*.run.xml
+appendix/*.synctex.gz
+appendix/*.toc
+# Appendix figures are inputs to the build, so exempt them from the global figure rules above
+!appendix/figures/**
 notebooks/dummy_outputs.csv
 notebooks/manuscript_figs/results_text.txt
 notebooks/quarto_all_task_outputs_files/libs/bootstrap/bootstrap-icons.css

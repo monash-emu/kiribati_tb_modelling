@@ -93,7 +93,11 @@ The relative susceptibility of the hard-to-reach stratum (\(\theta_{\mathrm{sus}
 
 \subsubsection{Screening algorithm sensitivities}
 
-The sensitivity assigned to each screening algorithm for each model state is reported in Table~\ref{tab-screening-sens}. With the exception of the TST parameters, these values were derived from the completed phase of the PEARL campaign, in which each participant found to have TB was classified by clinical status and by infectiousness, and the result of each nested algorithm was recorded. Sensitivity was evaluated against all disease detected by the full symptom-screening, CXR and Xpert algorithm among participants with an interpretable Xpert result. That algorithm therefore has a sensitivity of one for every disease state by construction, because it defines the reference standard, and this is the value assigned to the Xpert-containing branch in the model. It should be noted that this branch is not the same as the delivered PEARL programme, which combines it with CXR alone in the proportions given in Section~\ref{sec:screening}.
+The sensitivity assigned to each screening algorithm for each model state is reported in Table~\ref{tab-screening-sens}. 
+
+\input{tab-screening-sens.tex}
+
+With the exception of the TST parameters, these values were derived from the completed phase of the PEARL campaign, in which each participant found to have TB was classified by clinical status and by infectiousness, and the result of each nested algorithm was recorded. Sensitivity was evaluated against all disease detected by the full symptom-screening, CXR and Xpert algorithm among participants with an interpretable Xpert result. That algorithm therefore has a sensitivity of one for every disease state by construction, because it defines the reference standard, and this is the value assigned to the Xpert-containing branch in the model. It should be noted that this branch is not the same as the delivered PEARL programme, which combines it with CXR alone in the proportions given in Section~\ref{sec:screening}.
 
 The sensitivity of CXR to subclinical disease was the only screening quantity that was materially uncertain, and it was estimated during calibration. The prior bounds were derived from the exact (Clopper--Pearson) interval around the sensitivity observed in each subclinical stratum during the completed PEARL phase: 4 of 16 individuals with less-infectious subclinical disease were identified, giving a uniform prior on \([0.07, 0.52]\), against 44 of 52 with more-infectious subclinical disease, giving a uniform prior on \([0.72, 0.93]\). The considerably wider prior for the less-infectious state reflects the small number of individuals in that stratum rather than any additional biological uncertainty. These two parameters are further informed during calibration by the CXR-measured prevalence target, which is compared with a model output constructed using the same sensitivities, alongside the prevalence measured under the full algorithm.
 
@@ -102,6 +106,7 @@ The probability of a positive TST was fixed at 0.75 for both the incipient and c
 The corresponding probability among individuals who have cleared infection or recovered from disease was estimated during calibration under a uniform prior on \([0.2, 0.5]\), since the persistence of tuberculin reactivity after clearance is poorly characterised. The bounds were informed by the frequency with which infection tests revert to negative: a meta-analysis of serial QuantiFERON testing reported a pooled reversion proportion of approximately 25\%~\cite{zhang2018}, reversion is common following preventive treatment~\cite{johnson2014}, and reversion rates in a high-burden setting were lower than those reported from low-burden settings~\cite{andrews2015}. The prior therefore allows between a fifth and a half of individuals who have cleared or recovered to remain test-positive.
 
 The probability of completing preventive treatment once identified as TST-positive was fixed at 0.7, matching the completion proportion observed among participants offered TPT during the completed phase of the PEARL campaign.
+
 
 \subsubsection{Screening coverage}
 

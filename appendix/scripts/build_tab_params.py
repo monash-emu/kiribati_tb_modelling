@@ -57,6 +57,107 @@ SENS_TABLE_NOTES = (
     r'computing the modelled TST positivity used as a calibration target.'
 )
 
+# Ordered grouping of the main table. Every non-sensitivity parameter must appear exactly once.
+PARAM_CATEGORIES = [
+    ('Transmission and mixing', [
+        'raw_transmission_rate',
+        'infection_pop_scale',
+        'bg_mixing',
+        'a_spread',
+        'pc_strength',
+        'rel_sus_children',
+    ]),
+    ('Infection and early progression', [
+        'progression_rate_age0',
+        'progression_rate_age5',
+        'progression_rate_age15',
+        'containment_rate_age0',
+        'containment_rate_age5',
+        'containment_rate_age15',
+        'breakdown_rate',
+        'clearance_rate',
+        'rel_sus_contained',
+        'rel_sus_cleared',
+    ]),
+    ('Active TB disease', [
+        'clinical_progression_rate',
+        'clinical_regression_rate',
+        'infectiousness_gain_rate',
+        'infectiousness_loss_rate',
+        'rel_infectiousness_subclin',
+        'rel_infectiousness_lowinf',
+        'tb_mortality_rate_inf',
+        'tb_mortality_rate_lowinf',
+        'self_recovery_rate',
+    ]),
+    ('Passive detection and treatment', [
+        'recent_detection_rate',
+        'passive_detection_inflection',
+        'passive_detection_shape',
+        'passive_detection_past_frac',
+        'tx_duration',
+        'pct_neg_tx_death',
+        'tpt_completion_perc',
+    ]),
+    ('Screening reachability', [
+        'reachable_pop_frac',
+        'rel_detection_unreachable',
+        'rel_sus_unreachable',
+    ]),
+]
+
+CALIBRATED = r'Calibrated'
+EXPLORATION = r'Early model exploration'
+ASSUMPTION = r'Assumption'
+PEARL_OBSERVED = r'Observed during PEARL'
+
+# Parameters whose value is varied, and the model recalibrated, in a sensitivity analysis
+VARIED_IN_SENSITIVITY = {
+    'clinical_regression_rate',
+    'infectiousness_loss_rate',
+    'tpt_completion_perc',
+    'rel_sus_unreachable',
+}
+
+# Provenance of each value or prior, shown in the table's Source column.
+PARAM_SOURCES = {
+    'raw_transmission_rate': CALIBRATED,
+    'infection_pop_scale': r'Full range of possible values',
+    'bg_mixing': EXPLORATION,
+    'a_spread': EXPLORATION,
+    'pc_strength': EXPLORATION,
+    'rel_sus_children': r'\cite{roy2014,pelzer2025,cai2025}',
+    'progression_rate_age0': r'\cite{ragonnet2017}',
+    'progression_rate_age5': r'\cite{ragonnet2017}',
+    'progression_rate_age15': r'\cite{ragonnet2017}',
+    'containment_rate_age0': r'\cite{ragonnet2017}',
+    'containment_rate_age5': r'\cite{ragonnet2017}',
+    'containment_rate_age15': r'\cite{ragonnet2017}',
+    'breakdown_rate': CALIBRATED,
+    'clearance_rate': r'\cite{emery2021,behr2019}',
+    'rel_sus_contained': r'\cite{andrews2012}',
+    'rel_sus_cleared': r'\cite{verver2005,interrante2015}',
+    'clinical_progression_rate': CALIBRATED,
+    'clinical_regression_rate': ASSUMPTION,
+    'infectiousness_gain_rate': CALIBRATED,
+    'infectiousness_loss_rate': ASSUMPTION,
+    'rel_infectiousness_subclin': ASSUMPTION,
+    'rel_infectiousness_lowinf': r'\cite{behr1999,asadi2022,yang2015}',
+    'tb_mortality_rate_inf': r'\cite{ragonnet2021}',
+    'tb_mortality_rate_lowinf': r'\cite{ragonnet2021}',
+    'self_recovery_rate': r'\cite{ragonnet2021}',
+    'recent_detection_rate': CALIBRATED,
+    'passive_detection_inflection': CALIBRATED,
+    'passive_detection_shape': EXPLORATION,
+    'passive_detection_past_frac': CALIBRATED,
+    'tx_duration': r'Standard six-month regimen',
+    'pct_neg_tx_death': r'Treatment outcomes reported to WHO for Kiribati',
+    'tpt_completion_perc': PEARL_OBSERVED,
+    'reachable_pop_frac': PEARL_OBSERVED,
+    'rel_detection_unreachable': ASSUMPTION,
+    'rel_sus_unreachable': ASSUMPTION,
+}
+
 
 latex_escape_map = {
     '&': r'\&', '%': r'\%', '$': r'\$', '#': r'\#', '_': r'\_', '{': r'\{', '}': r'\}',
@@ -77,11 +178,12 @@ def build_value_or_prior(row) -> str:
     p1   = row.get('distri_param1', '')
     p2   = row.get('distri_param2', '')
     val  = row.get('value', '')
-    if pd.notna(dist) and str(dist).strip() != '':
-        # Render as: distribution (p1, p2) -- if p2 missing, still works
-        inside = ', '.join([str(x) for x in (p1, p2) if pd.notna(x) and str(x)!=''])
-        return f"{dist} ({inside})" if inside else f"{dist}"
-    return str(val)
+    if pd.isna(dist) or str(dist).strip() == '':
+        return format_number(val)
+    if str(dist).strip().lower() == 'uniform':
+        return rf"$\mathcal{{U}}({format_number(p1)},\,{format_number(p2)})$"
+    inside = ', '.join([format_number(x) for x in (p1, p2) if pd.notna(x) and str(x) != ''])
+    return f"{dist} ({inside})" if inside else f"{dist}"
 
 
 def format_number(x) -> str:
@@ -149,40 +251,41 @@ def df_to_sens_table(df, caption, label):
 
 
 def df_to_longtable(df, caption, label):
-    # Expected columns
-    cols = ['parameter','definition','value_or_prior','unit']
-    assert list(df.columns) == cols
+    cols = ['definition', 'value_or_prior', 'source']
+    assert list(df.columns) == cols + ['parameter']
 
-    # 2) Column alignment with monospaced for code-like columns
-    #    - parameter (tt), definition (wrap), value_or_prior (tt), unit (l)
-    #    Requires \usepackage{array}, \usepackage{booktabs,longtable} in preamble
-    align = r'>{\ttfamily}p{0.28\textwidth} p{0.42\textwidth} >{\ttfamily}p{0.22\textwidth} l'
+    align = r'p{0.45\textwidth} >{\centering\arraybackslash}p{0.15\textwidth} p{0.30\textwidth}'
 
     header = (
         r'\toprule' + '\n' +
-        r'\textbf{Parameter} & \textbf{Definition} & \textbf{Value / Prior} & \textbf{Unit} \\' + '\n' +
+        r'\textbf{Parameter} & \textbf{Value / Prior} & \textbf{Source} \\' + '\n' +
         r'\midrule'
     )
+    continued = rf'\multicolumn{{3}}{{@{{}}l}}{{\textit{{Table~\ref{{{label}}} continued from previous page}}}} \\[2pt]'
 
+    by_name = df.set_index('parameter')
     rows = []
-    for _, r in df.iterrows():
-        row_cells = [r[c] for c in cols]
-        rows.append(' {} \\\\'.format(' & '.join(row_cells)))
+    for i, (category, names) in enumerate(PARAM_CATEGORIES):
+        if i:
+            rows.append(r'\addlinespace')
+        # The starred row terminator keeps a category heading with the row that follows it
+        rows.append(rf'\multicolumn{{3}}{{@{{}}l}}{{\textbf{{{category}}}}} \\*')
+        for name in names:
+            r = by_name.loc[name]
+            rows.append(' {} \\\\'.format(' & '.join(r[c] for c in cols)))
     body = '\n'.join(rows)
-
-    footer = r'\bottomrule'
 
     table = (
         r'\begin{longtable}{' + align + '}' + '\n' +
         r'\caption{' + caption + r'}\label{' + label + r'}\\' + '\n' +
         header + '\n' +
         r'\endfirsthead' + '\n' +
-        r'\caption[]{' + caption + r' (continued)}\\' + '\n' +
+        continued + '\n' +
         header + '\n' +
         r'\endhead' + '\n' +
-        r'\hline \multicolumn{4}{r}{\textit{Continues on next page}} \\' + '\n' +
+        r'\midrule \multicolumn{3}{r}{\textit{Continues on next page}} \\' + '\n' +
         r'\endfoot' + '\n' +
-        footer + '\n' +
+        r'\bottomrule' + '\n' +
         r'\endlastfoot' + '\n' +
         body + '\n' +
         r'\end{longtable}'
@@ -194,7 +297,11 @@ def main():
     ap.add_argument('--xlsx',   default='parameters.xlsx', help='Path to parameters.xlsx')
     ap.add_argument('--sheet',  default='constant',        help='Sheet name for constant params')
     ap.add_argument('--out',    default='tab-params.tex',  help='Output .tex file')
-    ap.add_argument('--caption',default='Model parameters',help='LaTeX table caption')
+    ap.add_argument('--caption', default=(
+        r'Model parameters. $\mathcal{U}(a,b)$ denotes a uniform prior estimated during calibration; '
+        r'all other entries are fixed values. The Source column gives the origin of the value or of the '
+        r'prior bounds, and the rationale for each is set out in Section~\ref{sec:params}.'
+    ), help='LaTeX table caption')
     ap.add_argument('--label',  default='tab-params',      help='LaTeX table label')
     ap.add_argument('--out-sens',     default='tab-screening-sens.tex', help='Output .tex file for the screening sensitivity table')
     ap.add_argument('--caption-sens', default=(
@@ -237,17 +344,32 @@ def main():
     elif 'definition' not in df.columns:
         df['definition'] = ''
 
+    # Fail loudly if the spreadsheet and the hand-maintained groupings drift apart
+    grouped = [name for _, names in PARAM_CATEGORIES for name in names]
+    if len(grouped) != len(set(grouped)):
+        raise ValueError('Duplicate parameter in PARAM_CATEGORIES')
+    if set(grouped) != set(df['parameter']):
+        raise ValueError(
+            'PARAM_CATEGORIES does not match the spreadsheet.\n'
+            f"  missing from PARAM_CATEGORIES: {sorted(set(df['parameter']) - set(grouped))}\n"
+            f"  not in spreadsheet: {sorted(set(grouped) - set(df['parameter']))}"
+        )
+    if missing_sources := sorted(set(df['parameter']) - set(PARAM_SOURCES)):
+        raise ValueError(f'No entry in PARAM_SOURCES for: {missing_sources}')
+
     # Select & order columns
-    keep = ['parameter', 'definition', 'value_or_prior', 'unit']
-    missing = [c for c in keep if c not in df.columns]
-    if missing:
+    keep = ['definition', 'value_or_prior']
+    if missing := [c for c in keep if c not in df.columns]:
         raise ValueError(f"Missing expected columns in Excel: {missing}")
 
-    df = df[keep].copy()
+    df = df[keep + ['parameter']].copy()
 
-    # Escape LaTeX in all cells
-    for col in keep:
-        df[col] = df[col].map(latex_escape)
+    # Escape LaTeX in cells holding plain text; values and sources already carry markup
+    df['definition'] = df['definition'].map(latex_escape)
+    df['source'] = df['parameter'].map(PARAM_SOURCES)
+    varied = df['parameter'].isin(VARIED_IN_SENSITIVITY)
+    df.loc[varied, 'source'] += r', varied in sensitivity analysis'
+    df = df[['definition', 'value_or_prior', 'source', 'parameter']]
 
     # Build longtable
     tex = (

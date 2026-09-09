@@ -1,0 +1,20 @@
+\begin{table}[!ht]
+\centering
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\caption{Sensitivity of each screening approach to the model states it can detect, i.e.\ the probability that an individual occupying a given state and screened under that approach is correctly identified. $\mathcal{U}(a,b)$ denotes a uniform prior estimated during calibration; dashes indicate states that the approach does not target. Because operational constraints meant that frontline Xpert could be applied to only 35\% of those screened, the PEARL algorithm is represented as the corresponding weighted mixture of its two branches, $s^{\mathrm{PEARL}}_k = 0.35\,s^{\mathrm{Xpert+CXR}}_k + 0.65\,s^{\mathrm{CXR}}_k$.}\label{tab-screening-sens}
+\begin{tabular}{lccccccc}
+\toprule
+\textbf{Screening approach} & \shortstack{Incipient\\infection} & \shortstack{Contained\\infection} & \shortstack{Cleared\\or recovered} & \shortstack{Subclinical\\low inf.} & \shortstack{Clinical\\low inf.} & \shortstack{Subclinical\\high inf.} & \shortstack{Clinical\\high inf.} \\
+\midrule
+Tuberculin skin test (TST) & 0.75 & 0.75 & $\mathcal{U}(0.2,\,0.5)$ & --$^{*}$ & --$^{*}$ & --$^{*}$ & --$^{*}$ \\
+Symptom screening (SSx) & -- & -- & -- & 0 & 1 & 0 & 1 \\
+Chest X-ray (CXR) & -- & -- & -- & $\mathcal{U}(0.07,\,0.52)$ & 1 & $\mathcal{U}(0.72,\,0.93)$ & 1 \\
+Xpert + CXR & -- & -- & -- & 1 & 1 & 1 & 1 \\
+\bottomrule
+\end{tabular}
+\par\smallskip
+\begin{minipage}{\textwidth}\raggedright\footnotesize
+$^{*}$These states are not targeted by TST-guided preventive treatment, so no screening flow originates from them. They are nevertheless assumed to be TST-positive with probability one when computing the modelled TST positivity used as a calibration target.
+\end{minipage}
+\end{table}

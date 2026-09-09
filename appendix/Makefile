@@ -15,7 +15,7 @@ all: $(PDF)
 # Generate the LaTeX tables from Excel using pixi's Python
 $(TAB) $(TABSENS): $(DATA) $(SCRIPT)
 	@echo ">>> Generating $(TAB) and $(TABSENS) (using pixi environment)"
-	pixi run python $(SCRIPT) --xlsx $(DATA) --out $(TAB) --out-sens $(TABSENS) --caption "Model parameters" --label tab-params
+	pixi run python $(SCRIPT) --xlsx $(DATA) --out $(TAB) --out-sens $(TABSENS) --label tab-params
 
 # Build the PDF using pixi's environment (assuming latexmk is available system-wide)
 $(PDF): $(TEX) $(TAB) $(TABSENS) $(PARAM) $(FIGS)
