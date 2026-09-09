@@ -6,6 +6,7 @@
 \usepackage{booktabs}
 \usepackage{geometry}
 \usepackage{booktabs,longtable,array}
+\usepackage[numbers,sort&compress]{natbib}
 \usepackage[hidelinks]{hyperref}
 
 \geometry{margin=1in} 
@@ -101,13 +102,13 @@ Self-recovery is allowed only from subclinical states, with recovered individual
 Treatment is available for all active states, with successful treatment leading to recovery ($R$) and unsuccessful treatment resulting in relapse to subclinical low infectiousness ($D_{SL}$) or death.
 
 \paragraph{Early infection.}
-Progression from \(E\) is age-specific (three categories: $<5$, 5--14, 15+) and partitioned into low vs high infectiousness at first presentation. Containment rates are also age-specific. Clearance and immune breakdown are age-invariant.
+Progression from \(E\) is age-specific (three categories: $<5$, 5--14, 15+) and partitioned into low vs high infectiousness at first presentation. In the absence of data informing this split, progression from incipient infection is divided equally between the less-infectious and the more-infectious subclinical states (\(p=0.5\)). This assumption is not restrictive, because the subsequent within-disease transition rates are estimated during calibration, so that the resulting distribution of prevalent TB across the four disease states reproduces the observed data regardless of the initial split. Containment rates are also age-specific. Clearance and immune breakdown are age-invariant.
 
 \paragraph{Clinical and infectiousness transitions.}
 \label{sec:tb_disease}
 Movements between subclinical and clinical states, and between low and high infectiousness, govern within-disease dynamics. The cross-sectional observations available from the completed PEARL screening phase constrain the relative sizes of the four disease compartments, but not the speed at which individuals move between them: the same distribution of prevalent TB across states can be reproduced by slow or by rapid transitions in both directions.
 
-To resolve this identifiability problem, the two regression rates (clinical \(\to\) subclinical and high \(\to\) low infectiousness) are fixed at a common value, while the two corresponding progression rates (subclinical \(\to\) clinical and low \(\to\) high infectiousness) are estimated during calibration. In the base case the common regression rate is set to 1 per year, corresponding to an average of one year spent in a given state before regression. Under this constraint, the estimated progression rates adjust so that the model reproduces the observed distribution of prevalent TB across the four states.
+To resolve this identifiability problem, the two regression rates (clinical \(\to\) subclinical and high \(\to\) low infectiousness) are fixed at a common value, while the two corresponding progression rates (subclinical \(\to\) clinical and low \(\to\) high infectiousness) are estimated during calibration. In the base case the common regression rate is set to 1 per year, corresponding to an average of one year spent in a given state before regression. Under this constraint, the estimated progression rates adjust so that the model reproduces the observed distribution of prevalent TB across the four states. The priors placed on the two estimated rates were chosen wide enough that the posteriors are determined by the PEARL observations rather than by the prior bounds.
 
 Because this common value is an assumption rather than an estimate, it is varied in sensitivity analysis across 0.5, 1, 2 and 3 per year, with the model recalibrated at each value. This yields configurations that all reproduce the observed cross-sectional distribution of disease states while differing markedly in the overall speed of movement across the TB spectrum.
 
@@ -655,6 +656,7 @@ Each model configuration is calibrated independently, and the configurations are
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Parameter Definitions, Values and Priors}
+\label{sec:params}
 
 
 \input{parameterisation.tex}
@@ -664,5 +666,11 @@ Each model configuration is calibrated independently, and the configurations are
 % Code-like names appear only in the parameter table included below.
 \small 
 \input{tab-params.tex}
+
+\clearpage
+\normalsize
+\addcontentsline{toc}{section}{References}
+\bibliographystyle{unsrtnat}
+\bibliography{references}
 
 \end{document}
