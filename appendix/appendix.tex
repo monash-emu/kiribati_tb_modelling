@@ -54,6 +54,17 @@ We denote the following compartments:
 
 \noindent We use the term ``M.tb na\"ive'' rather than the commonly used ``Susceptible'' to describe individuals who have never been infected with M.tb, because several non-na\"ive compartments remain (partially) susceptible to reinfection.
 
+\paragraph{Model structure.}
+Figure~\ref{fig:model-structure} shows the model compartments and the transitions between them.
+\begin{figure}[!ht]
+\centering
+\includegraphics[width=\textwidth]{figures/tb_model.pdf}
+\caption{\textbf{Schematic of model compartments and transitions.}
+Transmission pathways are shown in red, with dashed red arrows indicating reinfection. For clarity, age and screening-reachability stratification, births, natural mortality, spontaneous recovery from subclinical TB, and TB-related mortality from clinical TB are not shown.
+}
+\label{fig:model-structure}
+\end{figure}
+
 \paragraph{Model overview.}
 Non-disease \emph{M.~tuberculosis} infection is modelled through two stages: incipient (\(E\)) and contained (\(C\)). 
 The contained stage represents a state in which the infection is controlled by the immune system, with no immediate risk of progression to active disease. 
@@ -71,14 +82,6 @@ The model is additionally stratified by screening reachability, distinguishing i
 The model is simulated from 1850 to 2035. The initial population size is set to the earliest available WPP estimate for the modelled population (1950), and no population growth is applied before that first data year, so the population size remains constant over the initial period and follows the observed trajectory thereafter (Section~\ref{sec:demog}).
 The epidemic is seeded at the start of the simulation with 100 individuals in the clinical, high-infectiousness disease state (\(D_{CH}\)), with the remainder of the population placed in the M.tb-na\"ive compartment (\(S\)).
 The long period preceding the first calibration data allows the age distribution and the TB epidemic to reach an endemic equilibrium well before the period informed by observations, so that results are insensitive to the size and composition of the initial seed.
-
-% \paragraph{Model structure.}
-% \begin{figure}[!ht]
-% \centering
-% \includegraphics[width=0.95\textwidth]{figures/tb_model.png}
-% \caption{Schematic of model compartments and transitions.}
-% \label{fig:model-structure}
-% \end{figure}
 
 \paragraph{Parameter treatment in calibration.}
 Parameters with specified prior distributions are estimated in the Bayesian calibration while those without priors are fixed. 
@@ -669,11 +672,6 @@ Each model configuration is calibrated independently, and the configurations are
 \label{sec:params}
 
 \input{parameterisation.tex}
-
-\clearpage
-\small
-\setlength{\LTcapwidth}{\textwidth}
-\input{tab-params.tex}
 
 \clearpage
 \normalsize

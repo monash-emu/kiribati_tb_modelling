@@ -2,6 +2,14 @@ In this section, we describe the sources and rationale underlying the parameter 
 
 Unless stated otherwise, priors on estimated parameters are uniform and were deliberately specified over ranges wide enough not to constrain the posterior, so that the calibration targets are the only quantities informing their values. Where a bound is not derived from published evidence, it was instead chosen so that the values it excludes correspond to model behaviour that is either mechanistically impossible or plainly incompatible with the observed data.
 
+Table~\ref{tab-params} summarises the parameter definitions, values, and priors used in the model, while the following sections provide detailed descriptions and justifications for the parameter choices.
+
+\clearpage
+\small
+\setlength{\LTcapwidth}{\textwidth}
+\input{tab-params.tex}
+
+
 \subsection{TB natural history parameters}
 
 The model incorporates a detailed representation of the spectrum of \textit{M. tuberculosis} infection and disease. The parameters governing this representation are described below in the order in which an individual encounters them: progression and containment following infection, breakdown and clearance of established infection, susceptibility to reinfection, transitions across the active disease spectrum, relative infectiousness, and the outcomes of untreated disease.
@@ -112,7 +120,7 @@ The probability of completing preventive treatment once identified as TST-positi
 
 Coverage levels of 65\%, 75\% and 85\% of the total population were examined. These are scenario assumptions rather than estimated quantities: the lower two represent plausible degrees of incomplete participation, while the highest corresponds to essentially complete coverage of the screening-reachable stratum and is treated as the practical upper bound achievable without extending the campaign to the hard-to-reach population (Section~\ref{sec:reachability}).
 
-\subsubsection{Sensitivity analyses}
+\subsection{Sensitivity analyses}
 
 In addition to the sixteen configurations that resulted from varying the relative susceptibility of the hard-to-reach stratum and the common disease-regression rate, three further analyses were run in which a single assumption was altered and the model then fully recalibrated.
 

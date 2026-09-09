@@ -303,7 +303,7 @@ def main():
     ap.add_argument('--sheet',  default='constant',        help='Sheet name for constant params')
     ap.add_argument('--out',    default='tab-params.tex',  help='Output .tex file')
     ap.add_argument('--caption', default=(
-        r'Model parameters. $\mathcal{U}(a,b)$ denotes a uniform prior estimated during calibration; '
+        r'Model parameters. $\mathcal{U}(a,b)$ denotes a uniform prior on the interval $[a,b]$ for parameters estimated during calibration; '
         r'all other entries are fixed values. The Source column gives the origin of the value or of the '
         r'prior bounds, and the rationale for each is set out in Section~\ref{sec:params}.'
     ), help='LaTeX table caption')
