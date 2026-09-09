@@ -27,11 +27,11 @@ SENS_PARAM_PREFIX = 'prev_se_'
 # Screening tools that are defined in the spreadsheet but not used in the analysis
 IGNORED_TOOLS = ('plts',)
 
-# (spreadsheet key, column header)
+# (spreadsheet key, column header). Line breaks are chosen so no line exceeds the equal column width.
 SENS_COMPARTMENTS = [
     ('incipient',      r'Incipient\\infection'),
     ('contained',      r'Contained\\infection'),
-    ('cleared',        r'Cleared\\or recovered'),
+    ('cleared',        r'Cleared or\\recovered'),
     ('subclin_lowinf', r'Subclinical\\low inf.'),
     ('clin_lowinf',    r'Clinical\\low inf.'),
     ('subclin_inf',    r'Subclinical\\high inf.'),
@@ -232,16 +232,16 @@ def df_to_sens_table(df, caption, label):
     return (
         r'\begin{table}[!ht]' + '\n' +
         r'\centering' + '\n' +
-        r'\scriptsize' + '\n' +
+        r'\small' + '\n' +
         r'\setlength{\tabcolsep}{3pt}' + '\n' +
         r'\caption{' + caption + r'}\label{' + label + '}\n' +
-        r'\begin{tabular}{l' + 'c' * len(SENS_COMPARTMENTS) + '}' + '\n' +
+        r'\begin{tabularx}{\textwidth}{l' + r'>{\centering\arraybackslash}X' * len(SENS_COMPARTMENTS) + '}' + '\n' +
         r'\toprule' + '\n' +
         header + '\n' +
         r'\midrule' + '\n' +
         '\n'.join(rows) + '\n' +
         r'\bottomrule' + '\n' +
-        r'\end{tabular}' + '\n' +
+        r'\end{tabularx}' + '\n' +
         r'\par\smallskip' + '\n' +
         r'\begin{minipage}{\textwidth}\raggedright\footnotesize' + '\n' +
         SENS_TABLE_NOTES + '\n' +
@@ -254,7 +254,12 @@ def df_to_longtable(df, caption, label):
     cols = ['definition', 'value_or_prior', 'source']
     assert list(df.columns) == cols + ['parameter']
 
-    align = r'p{0.45\textwidth} >{\centering\arraybackslash}p{0.15\textwidth} p{0.30\textwidth}'
+    # Fractions sum to 1; subtracting the inter-column padding makes the table exactly \textwidth
+    align = (
+        r'p{\dimexpr0.48\textwidth-2\tabcolsep} '
+        r'>{\centering\arraybackslash}p{\dimexpr0.19\textwidth-2\tabcolsep} '
+        r'p{\dimexpr0.33\textwidth-2\tabcolsep}'
+    )
 
     header = (
         r'\toprule' + '\n' +

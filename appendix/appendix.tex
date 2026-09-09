@@ -6,12 +6,22 @@
 \usepackage{booktabs}
 \usepackage{geometry}
 \usepackage{booktabs,longtable,array}
-\usepackage[numbers,sort&compress]{natbib}
+\usepackage{tabularx}
+\usepackage[
+  backend=biber,
+  style=numeric-comp,
+  sorting=none,
+  maxbibnames=5,
+  minbibnames=5,
+  giveninits=true,
+  doi=false, isbn=false, url=false, eprint=false
+]{biblatex}
+\addbibresource{references.bib}
 \usepackage[hidelinks]{hyperref}
 
 \geometry{margin=1in} 
 
-\title{Modelling mass TB and TBI screening in South Tarawa (Kiribati) --- Technical appendix}
+\title{Modelling mass TB and TBI screening in South Tarawa (Kiribati) --- Methods appendix}
 \date{}
 \author{Romain Ragonnet}
 
@@ -84,7 +94,7 @@ The model is implemented in Python using \texttt{summer2}, enabling symbolic spe
 
 All model code, calibration routines, analysis scripts, and interactive notebooks are available at \url{https://github.com/monash-emu/kiribati_tb_modelling}.
 
-The repository includes instructions for installation and reproduction of results (\textcolor{red}{Need to work on this}). The project environment is managed using \texttt{pixi} for reproducible dependency management and straightforward installation.
+The repository includes instructions for installation and reproduction of results. The project environment is managed using \texttt{pixi} for reproducible dependency management and straightforward installation.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Demographics}
@@ -658,18 +668,16 @@ Each model configuration is calibrated independently, and the configurations are
 \section{Parameter Definitions, Values and Priors}
 \label{sec:params}
 
-
 \input{parameterisation.tex}
 
-% \input{tab-screening-sens.tex}
- 
-\small 
+\clearpage
+\small
+\setlength{\LTcapwidth}{\textwidth}
 \input{tab-params.tex}
 
 \clearpage
 \normalsize
 \addcontentsline{toc}{section}{References}
-\bibliographystyle{unsrtnat}
-\bibliography{references}
+\printbibliography[title=References]
 
 \end{document}
