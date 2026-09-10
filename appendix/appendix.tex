@@ -602,20 +602,14 @@ b_{k,i}\,E_{i,s} +
 \subsection{Data Sources}
 \label{sec:calib-data}
 
+\paragraph{Epidemiological observations from PEARL.}
+Measured TB prevalence (using the PEARL algorithm and using CXR), the proportions of prevalent TB that were subclinical and more infectious, and age-specific TST positivity were obtained from the completed phase of PEARL screening. Because these observations were made among screening participants, they are compared with model outputs restricted to the screening-reachable stratum (Section~\ref{sec:reachability}). An additional, earlier estimate of TST positivity among adults aged 18 years and over was taken from a previous survey conducted in Kiribati.
+
 \paragraph{TB notifications.}
 Historical TB notifications were obtained from the Kiribati National Tuberculosis Programme, recorded by locality within South Tarawa. Because the model represents the part of South Tarawa remaining to be screened by PEARL in January 2026, the notification series was restricted to the localities east of, and excluding, Betio, Bairiki and Nanikai. A proportion of notifications each year had no locality recorded; these were allocated to the modelled area in proportion to its share of the South Tarawa population (63.3\%), giving the imputed annual series used for calibration.
 
-\paragraph{Treatment success rate.}
-The proportion of TB treatment episodes ending in success, \(\mathrm{TSR}(t)\), was specified as a time-variant input rather than estimated. Annual reported values for Kiribati were used for 1995--2022, together with a recent value for 2025 and two earlier anchor points representing the era before effective chemotherapy (0\% in 1945) and its early introduction (50\% in 1950). Values are linearly interpolated between these points and held constant outside the range. The treatment success rate determines the recovery rate on treatment and, together with the fixed fraction of unsuccessful episodes ending in death, the relapse and treatment-death rates described in Section~\ref{sec:screening}.
-
-\paragraph{Demographic data.}
-Population size by single year of age (1950--2100), age-specific deaths, and age-specific fertility rates (1950--2023) were taken from the United Nations World Population Prospects, as described in Sections~\ref{sec:demog} and~\ref{sec:mixing-matrix}.
-
 \paragraph{External contact matrix.}
 No empirical contact survey data are available for Kiribati. To constrain the age-mixing matrix estimated within the model (Section~\ref{sec:mixing-matrix}), we generated a synthetic contact matrix using the \texttt{conmat} R package. A contact model was fitted to the POLYMOD contact survey data and the corresponding survey populations, and then used to predict all-setting contact rates for the age distribution of the modelled South Tarawa population in 2025, using the same age breaks as the model. The resulting matrix was normalised by its spectral radius so that it is comparable with the model's normalised mixing matrix, and enters the likelihood through the matrix-distance term described below.
-
-\paragraph{Epidemiological observations from PEARL.}
-Measured TB prevalence (using the PEARL algorithm and using CXR), the proportions of prevalent TB that were subclinical and more infectious, and age-specific TST positivity were obtained from the completed phase of PEARL screening. Because these observations were made among screening participants, they are compared with model outputs restricted to the screening-reachable stratum (Section~\ref{sec:reachability}). An additional, earlier estimate of TST positivity among adults aged 18 years and over was taken from a previous survey conducted in Kiribati.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Calibration Targets and Likelihood}

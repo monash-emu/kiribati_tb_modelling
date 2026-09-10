@@ -10,6 +10,11 @@ Table~\ref{tab-params} summarises the parameter definitions, values, and priors 
 \input{tab-params.tex}
 
 
+\subsection{Demographic inputs}
+\label{sec:demog-inputs}
+
+Population size by single year of age (1950--2100), age-specific deaths, and age-specific fertility rates (1950--2023) were taken from the United Nations World Population Prospects. These series are data inputs rather than estimated parameters, and the way they enter the model is described in Sections~\ref{sec:demog} and~\ref{sec:mixing-matrix}.
+
 \subsection{TB natural history parameters}
 
 The model incorporates a detailed representation of the spectrum of \textit{M. tuberculosis} infection and disease. The parameters governing this representation are described below in the order in which an individual encounters them: progression and containment following infection, breakdown and clearance of established infection, susceptibility to reinfection, transitions across the active disease spectrum, relative infectiousness, and the outcomes of untreated disease.
@@ -89,7 +94,7 @@ The relative detection rate for subclinical disease was fixed at zero and the re
 
 The average treatment duration \(\tau\) was fixed at 0.5 years, corresponding to the standard six-month first-line regimen.
 
-The treatment success rate \(\mathrm{TSR}(t)\) is a time-variant data input rather than an estimated parameter; its sources and construction are described in Section~\ref{sec:calib-data}.
+The treatment success rate \(\mathrm{TSR}(t)\) is a time-variant data input rather than an estimated parameter. Annual reported values for Kiribati were used for 1995--2022, together with a recent value for 2025 and two earlier anchor points representing the era before effective chemotherapy (0\% in 1945) and its early introduction (50\% in 1950). Values are linearly interpolated between these points and held constant outside the range. The treatment success rate determines the recovery rate on treatment and, together with the fixed fraction of unsuccessful episodes ending in death, the relapse and treatment-death rates described in Section~\ref{sec:screening}.
 
 The fraction of negative outcomes resulting in death, \(f_{\mathrm{neg}}\), was fixed at 40\%, approximating the proportion of unsuccessful outcomes recorded as deaths in the treatment outcomes reported to WHO for Kiribati. The remaining unsuccessful outcomes, comprising treatment failure, loss to follow-up and cases not evaluated, are returned to active disease in the model. This proportion fluctuates markedly between years because the annual cohorts are small, so a single representative value was used rather than a time-varying series, and it was not estimated during calibration.
 
