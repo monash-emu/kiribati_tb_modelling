@@ -2,8 +2,6 @@ In this section, we describe the sources and rationale underlying the parameter 
 
 Unless stated otherwise, priors on estimated parameters are uniform and were deliberately specified over ranges wide enough not to constrain the posterior, so that the calibration targets are the only quantities informing their values. Where a bound is not derived from published evidence, it was instead chosen so that the values it excludes correspond to model behaviour that is either mechanistically impossible or plainly incompatible with the observed data.
 
-Table~\ref{tab-params} summarises the parameter definitions, values, and priors used in the model, while the following sections provide detailed descriptions and justifications for the parameter choices.
-
 \clearpage
 \small
 \setlength{\LTcapwidth}{\textwidth}
@@ -50,7 +48,7 @@ These observations should not be read as direct estimates of biological suscepti
 
 The active disease component distinguishes individuals according to both clinical status (subclinical versus clinical disease) and infectiousness (less infectious versus more infectious disease). Parameters governing transitions between these disease states were selected to reproduce realistic distributions of disease phenotypes while remaining identifiable from the available data. To reduce identifiability issues, transition rates from more infectious to less infectious disease and from clinical to subclinical disease were fixed at values corresponding to an average duration of approximately one year in each state before transition. Transition rates in the opposite direction were estimated during calibration.
 
-The priors for these two estimated rates (\(\chi^+\) for subclinical \(\to\) clinical progression and \(\sigma^+\) for gain of infectiousness) are best interpreted relative to the corresponding regression rates, which are fixed at 1.0 per year, since it is the balance between the two directions that determines the distribution of prevalent TB across states. The bounds were deliberately set wide, spanning distributions ranging from a large predominance of subclinical and less-infectious disease to the opposite, so that the posteriors are determined by the distribution of disease states measured during the completed PEARL screening phase rather than by the prior.
+The priors for these two estimated rates (\(\chi^+\) for subclinical \(\to\) clinical progression and \(\sigma^+\) for gain of infectiousness) are best interpreted relative to the corresponding regression rates, which are fixed at a common value of 1.0 per year in the base case, corresponding to an average of one year spent in a given state before regression, since it is the balance between the two directions that determines the distribution of prevalent TB across states. The bounds were deliberately set wide, spanning distributions ranging from a large predominance of subclinical and less-infectious disease to the opposite, so that the posteriors are determined by the distribution of disease states measured during the completed PEARL screening phase rather than by the prior. Because the common regression rate is an assumption rather than an estimate, it is varied across model configurations as described in Section~\ref{sec:configs}.
 
 \subsubsection{Relative infectiousness}
 
@@ -62,7 +60,7 @@ Subclinical disease was likewise assumed to be half as infectious as clinical di
 
 \subsubsection{Outcomes of untreated disease}
 
-Rates of TB mortality and of self-recovery were taken from a Bayesian re-analysis of pre-chemotherapy cohort data, which estimated the natural history parameters of untreated pulmonary tuberculosis ~\cite{ragonnet2021}, and held fixed; the states to which each applies are set out in Section~\ref{sec:tb_disease}. Relapse following unsuccessful treatment is not a free parameter, but is derived from the treatment success rate, the fraction of unsuccessful outcomes ending in death, and age-specific background mortality, as described in Section~\ref{sec:screening}. These quantities were fixed rather than estimated because they are only weakly identifiable from the cross-sectional data available, and because they were not expected to materially affect the comparison between screening algorithms that is the focus of this analysis; estimating them would have introduced identifiability problems without a corresponding gain.
+Rates of TB mortality and of self-recovery were taken from a Bayesian re-analysis of pre-chemotherapy cohort data, which estimated the natural history parameters of untreated pulmonary tuberculosis ~\cite{ragonnet2021}, and held fixed; the states to which each applies are set out in Section~\ref{sec:tb_disease}. These quantities were fixed rather than estimated because they are only weakly identifiable from the cross-sectional data available, and because they were not expected to materially affect the comparison between screening algorithms that is the focus of this analysis; estimating them would have introduced identifiability problems without a corresponding gain.
 
 \subsection{Transmission, mixing and BCG protection}
 
@@ -88,7 +86,7 @@ No direct estimate of the passive detection rate was available for Kiribati. The
 
 The steepness parameter \(\sigma\) was fixed at 0.15 per year rather than estimated, since the timing and the abruptness of the scale-up are only weakly separable given a single notification time series. The value was chosen by plotting the detection profiles implied by candidate values and retaining one that produced a gradual increase spread over several decades, consistent with the progressive strengthening of diagnostic capacity and access to care described in Section~\ref{sec:screening}. An example profile generated with this value is shown in Figure~\ref{detect}.
 
-The relative detection rate for subclinical disease was fixed at zero and the relative detection rate in the hard-to-reach stratum at 0.5, following the assumptions set out in Sections~\ref{sec:screening} and~\ref{sec:reachability}. Neither quantity is identifiable from the available data.
+The relative detection rate for subclinical disease was fixed at zero, following the assumption set out in Section~\ref{sec:screening}; the corresponding multiplier for the hard-to-reach stratum is given below.
 
 \subsubsection{Treatment}
 
@@ -102,7 +100,7 @@ The fraction of negative outcomes resulting in death, \(f_{\mathrm{neg}}\), was 
 
 The screening-reachable fraction \(\pi\) was fixed at 0.85, based on participation observed during the completed phase of the PEARL study. The relative passive detection rate in the hard-to-reach stratum (\(\theta_{\mathrm{det}}\)) was fixed at 0.5. No epidemiological observation distinguishes the two strata, so this quantity is not identifiable and could not be estimated.
 
-The relative susceptibility of the hard-to-reach stratum (\(\theta_{\mathrm{sus}}\)) is equally unidentifiable, but it has a far greater bearing on the projected impact of screening, because it governs how much transmission persists in the group that screening cannot reach. This parameter was fixed at 1.5 in the base-case configuration, and varied across 1.0, 1.5, 2.0 and 3.0 in sensitivity analyses.
+The relative susceptibility of the hard-to-reach stratum (\(\theta_{\mathrm{sus}}\)) is equally unidentifiable, but it has a far greater bearing on the projected impact of screening, because it governs how much transmission persists in the group that screening cannot reach. This parameter was fixed at 1.5 in the base case and varied across model configurations as described in Section~\ref{sec:configs}.
 
 \subsubsection{Screening algorithm sensitivities}
 
@@ -121,13 +119,12 @@ The corresponding probability among individuals who have cleared infection or re
 The probability of completing preventive treatment once identified as TST-positive was fixed at 0.7, matching the completion proportion observed among participants offered TPT during the completed phase of the PEARL campaign.
 
 
-\subsubsection{Screening coverage}
+\subsection{Model configurations and sensitivity analyses}
+\label{sec:configs}
 
-Coverage levels of 65\%, 75\% and 85\% of the total population were examined. These are scenario assumptions rather than estimated quantities: the lower two represent plausible degrees of incomplete participation, while the highest corresponds to essentially complete coverage of the screening-reachable stratum and is treated as the practical upper bound achievable without extending the campaign to the hard-to-reach population (Section~\ref{sec:reachability}).
+Two quantities that are not identifiable from the available data, but that materially affect the projected impact of screening, are treated by running the analysis across a grid of fixed values rather than by estimating them. The relative susceptibility of the hard-to-reach stratum (\(\theta_{\mathrm{sus}}\)) is varied across 1.0, 1.5, 2.0 and 3.0, and the common disease-regression rate across 0.5, 1, 2 and 3 per year. Their combination gives sixteen model configurations, each of which is calibrated independently and reproduces the observed cross-sectional distribution of disease states, while differing in the residual transmission sustained by the hard-to-reach population and in the overall speed of movement across the TB spectrum. The base case combines \(\theta_{\mathrm{sus}} = 1.5\) with a regression rate of 1 per year.
 
-\subsection{Sensitivity analyses}
-
-In addition to the sixteen configurations that resulted from varying the relative susceptibility of the hard-to-reach stratum and the common disease-regression rate, three further analyses were run in which a single assumption was altered and the model then fully recalibrated.
+Three further analyses were run in which a single assumption was altered and the model then fully recalibrated.
 
 The first assumed a preventive treatment completion probability of 0.6 rather than the 0.7 observed during the completed PEARL phase, since completion is a key determinant of the benefit attributable to the preventive treatment component of the campaign and may be lower in the remaining area.
 

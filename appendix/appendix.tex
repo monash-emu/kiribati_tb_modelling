@@ -89,6 +89,7 @@ Estimated classes include core transmission (baseline transmission rate and popu
 
 \paragraph{Model use in analysis.}
 The model is used in two stages: (i) to reconstruct the historical epidemic trajectory by calibrating uncertain parameters to epidemiological and intervention data; and (ii) to project forward under alternative intervention scenarios (screening and preventive treatment). Parameter estimation is performed in a Bayesian framework with Differential Evolution Metropolis algorithm (DEMetropolisZ); posterior samples are propagated to quantify uncertainty in projected outcomes.
+Two influential quantities that the data cannot identify are handled by repeating the whole analysis across a grid of fixed values, giving sixteen independently calibrated model configurations, and three further sensitivity analyses vary a single assumption each (Section~\ref{sec:configs}).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Software and Code}
@@ -100,71 +101,12 @@ All model code, calibration routines, analysis scripts, and interactive notebook
 The repository includes instructions for installation and reproduction of results. The project environment is managed using \texttt{pixi} for reproducible dependency management and straightforward installation.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Demographics}
+\section{Population Structure and Demography}
 \label{sec:demog}
 
-Each age and disease state in the model is subject to the appropriate all‑cause and TB‑specific mortality rates. Non-TB deaths are calculated using time-variant and age‑specific mortality rates, and births are injected into the youngest M.tb-naïve compartment to reproduce the observed population size over time.
-This approach allows the model to match observed population trajectories while maintaining internal demographic dynamics. Age‑specific mortality rates and population size over time are taken from the United Nations World Population Prospects (WPP) data. 
-We implement ageing as first-order transitions between adjacent age groups, with rates calculated as the inverse of the age group's span and applied to all age strata except the oldest one.
+The population is stratified by age, and each age and disease state in the model is subject to the appropriate all‑cause and TB‑specific mortality rates. Non-TB deaths are calculated using time-variant and age‑specific mortality rates, and births are injected into the youngest M.tb-naïve compartment to reproduce the observed population size over time. This approach allows the model to match observed population trajectories while maintaining internal demographic dynamics. Age-specific mortality rates and population size over time are taken from the United Nations World Population Prospects, as described in Section~\ref{sec:demog-inputs}. Ageing is implemented as first-order transitions between adjacent age groups, with rates calculated as the inverse of the age group's span and applied to all age strata except the oldest one.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Natural History of Infection and Disease}
-We represent early TB infection dynamics using two non-disease states: an \emph{incipient} state (E) and a \emph{contained} state (C). Individuals newly infected with \emph{M. tb} enter E, where infection is unstable and at risk of progression. From E, they may either progress to subclinical active TB or undergo immune-mediated containment, moving to C. Contained infection may subsequently clear entirely to X (uninfected/cleared) or experience immunological failure, returning to the incipient state E.
-Active TB is stratified by both clinical presentation (subclinical vs. clinical) and infectiousness (low vs. high), yielding four disease compartments: $D_{SL}, D_{CL}, D_{SH}, D_{CH}$. Individuals with subclinical disease may progress to clinical disease, and clinical disease may regress to subclinical; similarly, infectiousness may increase (low $\to$ high) or decrease (high $\to$ low).
-However, transitions are restricted to a single dimension at a time. Individuals may change clinical status (subclinical $\leftrightarrow$ clinical) or infectiousness (low $\leftrightarrow$ high), but simultaneous transitions in both dimensions are not allowed. 
-Self-recovery is allowed only from subclinical states, with recovered individuals entering $R$. In contrast, TB-induced mortality rates are only applied to the clinical states.
-Treatment is available for all active states, with successful treatment leading to recovery ($R$) and unsuccessful treatment resulting in relapse to subclinical low infectiousness ($D_{SL}$) or death.
-
-\paragraph{Early infection.}
-Progression from \(E\) is age-specific (three categories: $<5$, 5--14, 15+) and partitioned into low vs high infectiousness at first presentation. In the absence of data informing this split, progression from incipient infection is divided equally between the less-infectious and the more-infectious subclinical states (\(p=0.5\)). This assumption is not restrictive, because the subsequent within-disease transition rates are estimated during calibration, so that the resulting distribution of prevalent TB across the four disease states reproduces the observed data regardless of the initial split. Containment rates are also age-specific. Clearance and immune breakdown are age-invariant.
-
-\paragraph{Clinical and infectiousness transitions.}
-\label{sec:tb_disease}
-Movements between subclinical and clinical states, and between low and high infectiousness, govern within-disease dynamics. The cross-sectional observations available from the completed PEARL screening phase constrain the relative sizes of the four disease compartments, but not the speed at which individuals move between them: the same distribution of prevalent TB across states can be reproduced by slow or by rapid transitions in both directions.
-
-To resolve this identifiability problem, the two regression rates (clinical \(\to\) subclinical and high \(\to\) low infectiousness) are fixed at a common value, while the two corresponding progression rates (subclinical \(\to\) clinical and low \(\to\) high infectiousness) are estimated during calibration. In the base case the common regression rate is set to 1 per year, corresponding to an average of one year spent in a given state before regression. Under this constraint, the estimated progression rates adjust so that the model reproduces the observed distribution of prevalent TB across the four states. The priors placed on the two estimated rates were chosen wide enough that the posteriors are determined by the PEARL observations rather than by the prior bounds.
-
-Because this common value is an assumption rather than an estimate, it is varied in sensitivity analysis across 0.5, 1, 2 and 3 per year, with the model recalibrated at each value. This yields configurations that all reproduce the observed cross-sectional distribution of disease states while differing markedly in the overall speed of movement across the TB spectrum.
-
-\paragraph{Infectiousness weighting.}
-Let \(\sigma_S\) denote the relative infectiousness of subclinical vs clinical disease, and \(\sigma_L\) the relative infectiousness of low vs high. Define the active-disease index set
-\[
-\mathcal{K}=\{SL,CL,SH,CH\},
-\]
-with relative infectiousness weights \(w_k\) given by \(w_{CH}=1\), \(w_{CL}=\sigma_L\), \(w_{SH}=\sigma_S\), \(w_{SL}=\sigma_S\sigma_L\). Children under 15 years contribute zero infectiousness, implemented by setting \(w_k=0\) in those age groups.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Generalised Transmission and Infectiousness Weights}
-
-We interpolate between frequency- and density-dependent transmission using the exponent \(\kappa\in[0,1]\) applied to the contacted population size. Because mixing between reachability strata is homogeneous (Section~\ref{sec:reachability}), the force of infection depends on age group only. For age group \(i\) it is
-\[
-\lambda_i(t)
-=
-\beta_0\, N_{\mathrm{ref}}^{\,\kappa}
-\sum_{j}
-\tilde{C}_{ij}(t)\;
-\frac{I^{\mathrm{eff}}_j(t)}{N_j(t)^{\kappa}},
-\]
-where \(\tilde{C}(t)\) is the spectral-radius-normalised age-mixing matrix (Section~\ref{sec:mixing-matrix}).  Here \(N_{\mathrm{ref}}\) denotes the total population in year 2020 and is included purely as a scaling constant for more efficient calibration. This rescaling stabilises the magnitude of the transmission coefficient \(\beta_0\) across different values of \(\kappa\), preventing its calibrated value from varying by orders of magnitude as the dependence on population size changes.
-The effective infectious pool and the population size of age group \(j\) are both aggregated over the two reachability strata \(s\in\{\mathrm{r},\mathrm{u}\}\):
-\[
-I^{\mathrm{eff}}_j(t) =
-\sum_{s}\ \sum_{k\in\mathcal{K}} w_k\, D_{k,j,s}(t),
-\qquad
-N_j(t) = \sum_{s} N_{j,s}(t).
-\]
-Infectiousness weights \(w_k\) do not differ by reachability stratum; only susceptibility does, through the multiplier \(\theta^{\mathrm{sus}}_s\) introduced in Section~\ref{sec:reachability}.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Reinfection Pathways}
-
-Reinfection is permitted from \(C\), \(X\), and \(R\) with relative susceptibilities \(\rho_C\) (contained) and \(\rho_X=\rho_R\) (cleared and recovered), and a child susceptibility modifier \(\sigma^{\text{child}}\) applied when infection arises from \(S\) in $<15$\,y groups.
-This adjustment captures the effect of BCG vaccination, which is typically administered in infancy and provides protection against infection for several years.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%        
-\section{Age Stratification and Mixing}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Ageing and Age-Specific Adjustments}
+\subsection{Age Groups and Ageing}
 
 \paragraph{Age groups.}
 The population is stratified into \(G = 8\) age groups with lower bounds
@@ -183,24 +125,13 @@ The breaks were chosen so that every age-dependent process and observation used 
 \item \textbf{40 and 65 years} subdivide the adult population to capture differences in background mortality and in contact patterns across adult ages.
 \end{itemize}
 
-\paragraph{Ageing and adjustments.}
-Ageing is implemented as first-order transitions between adjacent age groups. Several age-specific adjustments and interventions are applied in the model (see previous sections for details):
-
-\begin{itemize}
-\item Age-specific early infection rates using three categories: \(<5\) years, 5--14 years, and 15+ years.
-\item Reduced susceptibility to infection from \(S\) in individuals aged \(<15\) years to reflect BCG effect.
-\item Infectiousness set to zero for individuals aged \(<15\) years.
-\item Age-specific background mortality.
-\item Age-specific screening interventions.
-\end{itemize}
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Age-Mixing Matrix}
 \label{sec:mixing-matrix}
 
 \paragraph{Notation and data sources.}
 Let \(i,j \in \{1,\dots,G\}\) index age groups and \([a_i,b_i]\) denote the single ages in group \(i\). Calendar time is \(t\) (years). 
-We use UN World Population Prospects data to inform age-specific population sizes (1950--2100) and age-specific fertility rates (1950--2023). For modelled years outside data ranges, quantities are clamped to the nearest available year.
+The construction uses the UN World Population Prospects population and fertility series described in Section~\ref{sec:demog-inputs}; for modelled years outside the data ranges, quantities are clamped to the nearest available year.
 \paragraph{Overview.}
 At time \(t\), we construct an age-specific contact matrix
 \[
@@ -261,7 +192,31 @@ Let \(\rho(t)\) be the spectral radius of \(\mathbf{C}(t)\). We use the normalis
 \tilde{\mathbf{C}}(t) = \frac{\mathbf{C}(t)}{\rho(t)}.
 \]
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Natural History of Infection and Disease}
+We represent early TB infection dynamics using two non-disease states: an \emph{incipient} state (E) and a \emph{contained} state (C). Individuals newly infected with \emph{M. tb} enter E, where infection is unstable and at risk of progression. From E, they may either progress to subclinical active TB or undergo immune-mediated containment, moving to C. Contained infection may subsequently clear entirely to X (uninfected/cleared) or experience immunological failure, returning to the incipient state E.
+Active TB is stratified by both clinical presentation (subclinical vs. clinical) and infectiousness (low vs. high), yielding four disease compartments: $D_{SL}, D_{CL}, D_{SH}, D_{CH}$. Individuals with subclinical disease may progress to clinical disease, and clinical disease may regress to subclinical; similarly, infectiousness may increase (low $\to$ high) or decrease (high $\to$ low).
+However, transitions are restricted to a single dimension at a time. Individuals may change clinical status (subclinical $\leftrightarrow$ clinical) or infectiousness (low $\leftrightarrow$ high), but simultaneous transitions in both dimensions are not allowed. 
+Self-recovery is allowed only from subclinical states, with recovered individuals entering $R$. In contrast, TB-induced mortality rates are only applied to the clinical states.
+Treatment is available for all active states, with successful treatment leading to recovery ($R$) and unsuccessful treatment resulting in relapse to subclinical low infectiousness ($D_{SL}$) or death.
 
+\paragraph{Early infection.}
+Progression from \(E\) is age-specific (three categories: $<5$, 5--14, 15+) and partitioned into low vs high infectiousness at first presentation. In the absence of data informing this split, progression from incipient infection is divided equally between the less-infectious and the more-infectious subclinical states (\(p=0.5\)). This assumption is not restrictive, because the subsequent within-disease transition rates are estimated during calibration, so that the resulting distribution of prevalent TB across the four disease states reproduces the observed data regardless of the initial split. Containment rates are also age-specific. Clearance and immune breakdown are age-invariant.
+
+\paragraph{Clinical and infectiousness transitions.}
+\label{sec:tb_disease}
+Movements between subclinical and clinical states, and between low and high infectiousness, govern within-disease dynamics. The cross-sectional observations available from the completed PEARL screening phase constrain the relative sizes of the four disease compartments, but not the speed at which individuals move between them: the same distribution of prevalent TB across states can be reproduced by slow or by rapid transitions in both directions. To resolve this identifiability problem, the two regression rates (clinical \(\to\) subclinical and high \(\to\) low infectiousness) are fixed at a common value, while the two corresponding progression rates (subclinical \(\to\) clinical and low \(\to\) high infectiousness) are estimated during calibration. The value adopted for the regression rate, the priors placed on the estimated rates, and the range over which the regression rate is varied are given in Section~\ref{sec:params}.
+
+\paragraph{Reinfection.}
+Reinfection is permitted from \(C\), \(X\), and \(R\) with relative susceptibilities \(\rho_C\) (contained) and \(\rho_X=\rho_R\) (cleared and recovered), and a child susceptibility modifier \(\sigma^{\text{child}}\) applied when infection arises from \(S\) in $<15$\,y groups.
+This adjustment captures the effect of BCG vaccination, which is typically administered in infancy and provides protection against infection for several years.
+
+\paragraph{Infectiousness weighting.}
+Let \(\sigma_S\) denote the relative infectiousness of subclinical vs clinical disease, and \(\sigma_L\) the relative infectiousness of low vs high. Define the active-disease index set
+\[
+\mathcal{K}=\{SL,CL,SH,CH\},
+\]
+with relative infectiousness weights \(w_k\) given by \(w_{CH}=1\), \(w_{CL}=\sigma_L\), \(w_{SH}=\sigma_S\), \(w_{SL}=\sigma_S\sigma_L\). Children under 15 years contribute zero infectiousness, implemented by setting \(w_k=0\) in those age groups.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Stratification by Screening Reachability}
@@ -270,7 +225,7 @@ Let \(\rho(t)\) be the spectral radius of \(\mathbf{C}(t)\). We use the normalis
 Population-wide screening never reaches the entire population, and the individuals who are not reached may differ epidemiologically from those who participate. To capture this, the model is stratified into two mutually exclusive strata: a \emph{screening-reachable} stratum, comprising individuals who can participate in active screening, and a \emph{hard-to-reach} stratum, comprising individuals who do not. This stratification is applied to all compartments and is crossed with the age stratification, so that each model state is indexed by both age group \(i\) and reachability stratum \(s \in \{\mathrm{r}, \mathrm{u}\}\).
 
 \paragraph{Population split.}
-The proportion of the population in the screening-reachable stratum is denoted \(\pi\) and is fixed at 0.85, based on participation observed during the completed phase of the PEARL study. The initial population is split between the two strata according to \(\pi\) and \(1-\pi\) within every compartment and age group.
+The proportion of the population in the screening-reachable stratum is denoted \(\pi\) (Section~\ref{sec:params}). The initial population is split between the two strata according to \(\pi\) and \(1-\pi\) within every compartment and age group.
 
 The stratum sizes are held at these proportions over time. Because there are no transitions between the screening-reachable and hard-to-reach strata, this is achieved by (i) splitting the additional births used to reproduce population growth between the two strata according to \(\pi\) and \(1-\pi\), and (ii) returning all deaths (background, TB-related, and on-treatment) to the M.tb-na\"ive compartment of the youngest age group \emph{within the same reachability stratum} from which they originated. Reachability is therefore a fixed, lifelong attribute in the model, and the fraction of the population that is hard to reach does not drift as the epidemic or the interventions evolve.
 Mixing between the screening-reachable and hard-to-reach strata is assumed to be homogeneous. In the absence of data on the contact patterns of individuals not reached by screening, this is a deliberately conservative assumption: assortative mixing within the hard-to-reach stratum would be expected to further concentrate residual transmission in that group.
@@ -279,27 +234,46 @@ Mixing between the screening-reachable and hard-to-reach strata is assumed to be
 Barriers to participating in screening are unlikely to occur in isolation and may coincide with living conditions or health-seeking behaviours that also affect TB risk and access to routine diagnosis. Two multiplicative adjustments are therefore applied to the hard-to-reach stratum, relative to the screening-reachable stratum:
 
 \begin{itemize}
-    \item \textbf{Susceptibility to infection.} All infection and reinfection flows (from \(S\), \(C\), \(X\) and \(R\)) are multiplied by \(\theta_{\mathrm{sus}}\) (\texttt{rel\_sus\_unreachable}) in the hard-to-reach stratum. The base-case value is 1.5, i.e.\ hard-to-reach individuals are assumed to acquire infection at 1.5 times the rate of screening-reachable individuals experiencing the same force of infection. This factor is applied to the susceptibility side of transmission only; the relative infectiousness of individuals with TB does not differ by stratum.
-    \item \textbf{Passive detection.} The time-varying passive detection rate \(\delta(t)\) (Section~\ref{sec:screening}) is multiplied by \(\theta_{\mathrm{det}}\) (\texttt{rel\_detection\_unreachable}) in the hard-to-reach stratum. The base-case value is 0.5, reflecting an assumption of reduced access to routine diagnostic services in the same population that is difficult to reach through active screening.
+    \item \textbf{Susceptibility to infection.} All infection and reinfection flows (from \(S\), \(C\), \(X\) and \(R\)) are multiplied by \(\theta_{\mathrm{sus}}\) (\texttt{rel\_sus\_unreachable}) in the hard-to-reach stratum, so that hard-to-reach individuals acquire infection at a higher rate than screening-reachable individuals experiencing the same force of infection. This factor is applied to the susceptibility side of transmission only; the relative infectiousness of individuals with TB does not differ by stratum.
+    \item \textbf{Passive detection.} The time-varying passive detection rate \(\delta(t)\) (Section~\ref{sec:screening}) is multiplied by \(\theta_{\mathrm{det}}\) (\texttt{rel\_detection\_unreachable}) in the hard-to-reach stratum, reflecting an assumption of reduced access to routine diagnostic services in the same population that is difficult to reach through active screening.
 \end{itemize}
 
-\noindent Both parameters are fixed rather than estimated, as the available data do not inform them; \(\theta_{\mathrm{sus}}\) is varied in sensitivity analysis.
+\noindent Neither multiplier is informed by the available data, so both are fixed rather than estimated; their values, and the range over which \(\theta_{\mathrm{sus}}\) is varied, are given in Section~\ref{sec:params}.
 
 \paragraph{Access to screening.}
-All active screening flows, for both TB disease and non-disease M.tb infection, are set to zero in the hard-to-reach stratum. Screening programmes therefore act exclusively on the screening-reachable stratum. As a consequence, the maximum achievable population coverage is \(\pi\): a nominal coverage of 85\% of the total population corresponds to screening essentially the whole screening-reachable stratum, whereas lower nominal coverage levels represent incomplete participation among screening-reachable individuals (Section~\ref{sec:screening}).
+All active screening flows, for both TB disease and non-disease M.tb infection, are set to zero in the hard-to-reach stratum. Screening programmes therefore act exclusively on the screening-reachable stratum, and the maximum achievable coverage of the total population is \(\pi\): a nominal coverage equal to \(\pi\) corresponds to screening essentially the whole screening-reachable stratum, whereas lower nominal coverage levels represent incomplete participation among screening-reachable individuals (Section~\ref{sec:screening}).
 
 \paragraph{Calibration and reporting.}
 Because the epidemiological observations collected during the completed PEARL screening phase were made among participants, the corresponding calibration targets (measured TB prevalence and TST positivity) are compared with model outputs restricted to the screening-reachable stratum. Historical notifications, which arise from passive detection in the whole population, are compared with model outputs aggregated across both strata. Projected burden outcomes are likewise reported for the entire modelled population unless otherwise stated, and the share of TB incidence arising from the hard-to-reach stratum is tracked as an additional output.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Transmission and Force of Infection}
+\label{sec:transmission}
 
+We interpolate between frequency- and density-dependent transmission using the exponent \(\kappa\in[0,1]\) applied to the contacted population size. Because mixing between reachability strata is homogeneous (Section~\ref{sec:reachability}), the force of infection depends on age group only. For age group \(i\) it is
+\[
+\lambda_i(t)
+=
+\beta_0\, N_{\mathrm{ref}}^{\,\kappa}
+\sum_{j}
+\tilde{C}_{ij}(t)\;
+\frac{I^{\mathrm{eff}}_j(t)}{N_j(t)^{\kappa}},
+\]
+where \(\tilde{C}(t)\) is the spectral-radius-normalised age-mixing matrix (Section~\ref{sec:mixing-matrix}).  Here \(N_{\mathrm{ref}}\) denotes the total population in year 2020 and is included purely as a scaling constant for more efficient calibration. This rescaling stabilises the magnitude of the transmission coefficient \(\beta_0\) across different values of \(\kappa\), preventing its calibrated value from varying by orders of magnitude as the dependence on population size changes.
+The effective infectious pool and the population size of age group \(j\) are both aggregated over the two reachability strata \(s\in\{\mathrm{r},\mathrm{u}\}\):
+\[
+I^{\mathrm{eff}}_j(t) =
+\sum_{s}\ \sum_{k\in\mathcal{K}} w_k\, D_{k,j,s}(t),
+\qquad
+N_j(t) = \sum_{s} N_{j,s}(t).
+\]
+Infectiousness weights \(w_k\) do not differ by reachability stratum; only susceptibility does, through the multiplier \(\theta^{\mathrm{sus}}_s\) introduced in Section~\ref{sec:reachability}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{TB Detection, Treatment and Screening}
 \label{sec:screening}
 
-\subsection{Detection}
-
-\paragraph{Passive detection.}
+\subsection{Passive Detection}
 Passive case finding applies \emph{only to clinical disease}. Subclinical disease is asymptomatic by definition and is therefore assumed not to prompt care seeking, so that individuals with subclinical TB can enter treatment only after progressing to clinical disease, or through active screening.
 
 The passive detection rate is allowed to vary over time, because diagnostic capacity and access to care in Kiribati have strengthened progressively over recent decades, and a constant rate would be difficult to reconcile with the historical notification series. Denote the time-varying passive detection profile by \(\delta(t)\), which follows a smooth hyperbolic-tangent scale-up from an earlier (lower) level to a recent level:
@@ -328,62 +302,6 @@ $\delta_{\mathrm{rec}} = 0.7$, $\phi = 0.5$, $\sigma = 0.15$ and $t^\ast = 2005$
 \caption{Example time-varying passive detection profile for clinical TB disease.}   
 \label{detect}
 \end{figure}
-
-\subsection{Screening programmes}
-
-We consider a set of time-limited screening interventions implemented over the year 2026. 
-Each screening programme is defined by a screening algorithm, a target population (by age), and a coverage level. 
-Three coverage levels are explored: 65\%, 75\% and 85\%. These are expressed as proportions of the \emph{total} target population, that is, with hard-to-reach individuals included in the denominator.
-
-Because screening can only reach the 85\% of the population classified as screening-reachable (Section~\ref{sec:reachability}), this represents the theoretical maximum population coverage. In practice, the scenarios labelled as ``85\% coverage'' are implemented using 84.5\% coverage, because complete coverage of the screening-reachable stratum would require an infinite screening rate under the constant-hazard formulation described below. The two lower levels represent incomplete participation among screening-reachable individuals.
-
-For each programme, the total coverage is translated into a constant per-capita screening rate applied to the screening-reachable stratum over the intervention period. Specifically, if \(c\) denotes the target coverage of the total population (expressed as a proportion), \(\pi\) the screening-reachable fraction, and \(\Delta t\) the duration of the campaign, 
-the screening rate is defined as \(-\frac{\log(1 - c/\pi)}{\Delta t}\).
-
-This ensures that, under a constant hazard assumption, a proportion \(c/\pi\) of the eligible screening-reachable population, and hence a proportion \(c\) of the total target population, is screened over the intervention period. The screening rate is implemented as a time-varying function that is zero outside the intervention window and constant during the campaign.
-
-Screening interventions may act on TB infection or active TB disease states. For each screening algorithm, screened individuals have a probability of being correctly identified defined by the sensitivity of the relevant algorithm for that compartment. 
-For TB screening, positively screened individuals are moved to the treatment compartment (\(T\)). 
-For TPT, only a fraction of the positively screened individuals transition to the cleared compartment (\(X\)) based on the probability of successful TPT completion.
-
-\paragraph{Screening algorithms.}
-
-Sensitivities in the model are properties of a complete \emph{algorithm} rather than of an individual test. For a given algorithm, the sensitivity assigned to a compartment is the probability that a person occupying that state, and screened under that algorithm, is correctly identified and referred for treatment.
-
-We consider the following approaches for the detection of TB disease, in increasing order of intensity:
-
-\begin{itemize}
-    \item \textbf{Symptom screening (SSx)}: screening on the basis of reported symptoms alone. Clinical disease is assumed to be identified with certainty and subclinical disease not at all, so that this algorithm cannot detect subclinical TB by construction.
-    \item \textbf{Chest X-ray (CXR)}: symptom screening combined with chest X-ray, with bacteriological confirmation of those with an abnormal result. The added value of CXR lies in the detection of subclinical disease, and the corresponding sensitivities are estimated during calibration (separately for less- and more-infectious subclinical TB), informed by the prevalence observed during the completed PEARL screening phase.
-    \item \textbf{PEARL}: symptom screening and CXR, with Xpert MTB/RIF Ultra additionally used as a frontline test in a subset of participants. Operational constraints during implementation meant that frontline Xpert was applied to 35\% of those screened, so the algorithm is represented as a mixture of the two branches:
-    \[
-    s^{\mathrm{PEARL}}_k = 0.35\, s^{\mathrm{Xpert+CXR}}_k + 0.65\, s^{\mathrm{CXR}}_k,
-    \qquad k\in\mathcal{K},
-    \]
-    where \(s^{\mathrm{Xpert+CXR}}_k\) is the sensitivity of the branch in which frontline Xpert is added to symptom screening and CXR, fixed at one for all four disease states. The weights are the proportions of participants allocated to each branch, so that \(s^{\mathrm{PEARL}}_k\) is the expected probability of detection for a randomly selected person screened under the programme as it was actually delivered, rather than under either branch in isolation.
-\end{itemize}
-
-\noindent By construction, \(s^{\mathrm{SSx}}_k \le s^{\mathrm{CXR}}_k \le s^{\mathrm{Xpert+CXR}}_k\) for every disease state \(k\).
-
-Screening for non-disease M.tb infection is performed using the \textbf{tuberculin skin test (TST)}, applied to the incipient and contained states with a common probability of a positive result. Individuals identified in this way are offered TPT, and only those completing it transition to the cleared state.
-
-TST reactivity is not restricted to these two states. Individuals who have cleared infection or recovered from disease may also react to the test, and individuals with active TB are assumed to react with probability one. These states are therefore included when computing the modelled TST positivity used as a calibration target, but no preventive treatment flow originates from them: individuals who have cleared or recovered are not at risk of progression and would derive no benefit from TPT, while those with active disease would be identified and treated through the concurrent disease-screening arm of the same campaign.
-
-\paragraph{Age targeting.}
-Screening programmes are targeted to specific age groups by applying multiplicative coverage adjustments during model age stratification. Age groups not targeted by a given programme have zero screening rate.
-
-\paragraph{Scenario structure.}
-We consider three screening algorithms:
-
-\begin{itemize}
-    \item \textbf{PEARL:} the algorithm implemented during the completed phase of the PEARL study. Individuals aged 10 years and above receive CXR, with Xpert additionally used as a frontline test in 35\% of them, reflecting operational constraints on its implementation. Children aged 3--9 years receive symptom screening, and TST-guided TPT is offered to all individuals aged 3 years and above.
-
-    \item \textbf{CXR-TST:} Xpert is removed from frontline screening. CXR is used for individuals aged 10 years and above, with symptom screening for ages 3--9 years and TST-guided TPT for ages 3 years and above.
-
-    \item \textbf{Disease screening only:} both Xpert and TST-guided TPT are removed, and screening is restricted to CXR among individuals aged 10 years and above. No screening is performed in children under 10 years, and no preventive treatment is provided.
-\end{itemize}
-
-Each algorithm is combined with each of the three coverage levels, giving a total of nine screening scenarios. These are compared with a baseline scenario in which no active screening is implemented. This framework allows us to assess the incremental population-level contribution of frontline Xpert, of TST-guided preventive treatment, and of increasing screening coverage.
 
 \subsection{Treatment outcomes}
 During treatment, individuals may experience three mutually exclusive outcomes: successful recovery, relapse, or death. Relapse here encompasses all unsuccessful outcomes other than death, including treatment failure and loss to follow-up; these individuals return to the subclinical, less-infectious disease state and remain subject to subsequent detection. Recovery occurs at a rate depending on the time-varying treatment success rate:
@@ -415,6 +333,65 @@ Finally, the age-specific relapse rate is derived from the residual fraction of 
 \] 
 
 These equations ensure that the sum of recovery, relapse, and treatment-death probabilities over the course of treatment equals one, while explicitly incorporating time-varying treatment success and age-specific background mortality.
+
+\subsection{Screening programmes}
+
+We consider a set of time-limited screening interventions implemented over the year 2026. Each programme is defined by three elements: the algorithm applied in each targeted age group, the age groups targeted, and the coverage achieved.
+
+\paragraph{Coverage.}
+Three coverage levels are explored: 65\%, 75\% and 85\%. These are expressed as proportions of the \emph{total} target population, that is, with hard-to-reach individuals included in the denominator, so that the highest level corresponds to essentially complete coverage of the screening-reachable stratum (Section~\ref{sec:reachability}). It is implemented as 84.5\%, because complete coverage of that stratum would require an infinite screening rate under the constant-hazard formulation used here.
+
+Coverage is translated into a constant per-capita screening rate applied to the screening-reachable stratum over the intervention period. If \(c\) denotes the target coverage of the total population (expressed as a proportion), \(\pi\) the screening-reachable fraction, and \(\Delta t\) the duration of the campaign, the screening rate is
+\[
+r = -\frac{\log(1 - c/\pi)}{\Delta t},
+\]
+under which a proportion \(c/\pi\) of the eligible screening-reachable population, and hence a proportion \(c\) of the total target population, is screened over the campaign. The rate is implemented as a time-varying function that is zero outside the intervention window and constant during it. Age groups not targeted by a given programme are assigned a screening rate of zero, applied as a multiplicative coverage adjustment during age stratification.
+
+\paragraph{Screening flows.}
+Screening may act on active TB disease or on non-disease M.tb infection. Sensitivities in the model are properties of a complete \emph{algorithm} rather than of an individual test: we write \(s^{A}_k\) for the sensitivity of approach \(A\) in state \(k\), that is, the probability that a person occupying that state, and screened under that approach, is correctly identified and referred for treatment. An individual in state \(k\) therefore leaves it through screening at hazard \(s^{A}_k\, r\), which is the quantity denoted \(\zeta_{k,i}(t)\) in Section~\ref{sec:odes}. Individuals identified with TB disease are moved to the treatment compartment (\(T\)). Individuals identified as infected are offered TPT, and the hazard is further multiplied by the probability of completing it, so that only completers move to the cleared compartment (\(X\)).
+
+\paragraph{Approaches to detecting TB disease.}
+We consider three approaches, in increasing order of intensity:
+
+\begin{itemize}
+    \item \textbf{Symptom screening (SSx)}: screening on the basis of reported symptoms alone. Clinical disease is assumed to be identified with certainty and subclinical disease not at all, so that this approach cannot detect subclinical TB by construction.
+    \item \textbf{Chest X-ray (CXR)}: symptom screening combined with chest X-ray, with bacteriological confirmation of those with an abnormal result. The added value of CXR lies in the detection of subclinical disease, and the corresponding sensitivities are estimated during calibration (separately for less- and more-infectious subclinical TB), informed by the prevalence observed during the completed PEARL screening phase.
+    \item \textbf{Xpert+CXR}: symptom screening and CXR, with Xpert MTB/RIF Ultra additionally used as a frontline test. This approach defines the reference standard against which the others are evaluated, and its sensitivity is therefore fixed at one for all four disease states.
+\end{itemize}
+
+\noindent By construction, \(s^{\mathrm{SSx}}_k \le s^{\mathrm{CXR}}_k \le s^{\mathrm{Xpert+CXR}}_k\) for every disease state \(k \in \mathcal{K}\).
+
+\paragraph{Screening for M.tb infection.}
+Screening for non-disease M.tb infection is performed using the \textbf{tuberculin skin test (TST)}, applied to the incipient and contained states with a common probability of a positive result.
+
+TST reactivity is not restricted to these two states. Individuals who have cleared infection or recovered from disease may also react to the test, and individuals with active TB are assumed to react with probability one. These states are therefore included when computing the modelled TST positivity used as a calibration target, but no preventive treatment flow originates from them: individuals who have cleared or recovered are not at risk of progression and would derive no benefit from TPT, while those with active disease would be identified and treated through the concurrent disease-screening arm of the same campaign.
+
+\paragraph{Screening programmes compared.}
+Three programmes are compared, differing in the approach applied to older children and adults and in whether preventive treatment is offered (Table~\ref{tab:programmes}).
+
+\begin{table}[!ht]
+\centering
+\begin{tabular}{llll}
+\toprule
+Programme & Ages 3--9 & Ages 10 and above & TST-guided TPT \\
+\midrule
+PEARL & SSx & Xpert+CXR in 35\%, CXR otherwise & Ages 3 and above \\
+CXR-TST & SSx & CXR & Ages 3 and above \\
+Disease screening only & None & CXR & None \\
+\bottomrule
+\end{tabular}
+\caption{The three screening programmes compared. PEARL is the programme implemented during the completed phase of the study; the other two remove frontline Xpert, and then additionally preventive treatment and the screening of younger children.}
+\label{tab:programmes}
+\end{table}
+
+Operational constraints during implementation meant that frontline Xpert was applied to only 35\% of those screened, so the PEARL programme is represented in individuals aged 10 years and above as a mixture of the two branches:
+\[
+s^{\mathrm{PEARL}}_k = 0.35\, s^{\mathrm{Xpert+CXR}}_k + 0.65\, s^{\mathrm{CXR}}_k,
+\qquad k\in\mathcal{K}.
+\]
+The weights are the proportions of participants allocated to each branch, so that \(s^{\mathrm{PEARL}}_k\) is the expected probability of detection for a randomly selected person screened under the programme as it was actually delivered, rather than under either branch in isolation.
+
+Each programme is combined with each of the three coverage levels, giving a total of nine screening scenarios. These are compared with a baseline scenario in which no active screening is implemented. This framework allows us to assess the incremental population-level contribution of frontline Xpert, of TST-guided preventive treatment, and of increasing screening coverage.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Ordinary Differential Equations}
