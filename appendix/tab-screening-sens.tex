@@ -1,11 +1,11 @@
 \begin{table}[!ht]
 \centering
-\small
+\footnotesize
 \setlength{\tabcolsep}{3pt}
-\caption{Sensitivity of each screening approach to the model states it can detect, i.e.\ the probability that an individual occupying a given state and screened under that approach is correctly identified. $\mathcal{U}(a,b)$ denotes a uniform prior estimated during calibration; dashes indicate states that the approach does not target. Because operational constraints meant that frontline Xpert could be applied to only 35\% of those screened, the PEARL algorithm is represented as the corresponding weighted mixture of its two branches, $s^{\mathrm{PEARL}}_k = 0.35\,s^{\mathrm{Xpert+CXR}}_k + 0.65\,s^{\mathrm{CXR}}_k$.}\label{tab-screening-sens}
-\begin{tabularx}{\textwidth}{l>{\centering\arraybackslash}X>{\centering\arraybackslash}X>{\centering\arraybackslash}X>{\centering\arraybackslash}X>{\centering\arraybackslash}X>{\centering\arraybackslash}X>{\centering\arraybackslash}X}
+\caption{Sensitivity of each screening approach to the model states it can detect, i.e.\ the probability that an individual occupying a given state and screened under that approach is correctly identified. The Xpert+CXR approach is the full PEARL algorithm, which defines the reference standard and therefore has a sensitivity of one in every disease state by construction. $\mathcal{U}(a,b)$ denotes a uniform prior estimated during calibration; dashes indicate states that the approach does not target. Because operational constraints meant that frontline Xpert could be applied to only 35\% of those screened, the PEARL programme as delivered is represented as the corresponding weighted mixture of its two branches, $s^{\mathrm{PEARL}}_k = 0.35\,s^{\mathrm{Xpert+CXR}}_k + 0.65\,s^{\mathrm{CXR}}_k$.}\label{tab-screening-sens}
+\begin{tabularx}{\textwidth}{@{}p{2.2cm}*{7}{>{\centering\arraybackslash}X}@{}}
 \toprule
-\textbf{Screening approach} & \shortstack{Incipient\\infection} & \shortstack{Contained\\infection} & \shortstack{Cleared or\\recovered} & \shortstack{Subclinical\\low inf.} & \shortstack{Clinical\\low inf.} & \shortstack{Subclinical\\high inf.} & \shortstack{Clinical\\high inf.} \\
+\textbf{Screening approach} & Incipient infection & Contained infection & Cleared or recovered & Asympt.\ low inf. & Sympt.\ low inf. & Asympt.\ high inf. & Sympt.\ high inf. \\
 \midrule
 Tuberculin skin test (TST) & 0.75 & 0.75 & $\mathcal{U}(0.2,\,0.5)$ & --$^{*}$ & --$^{*}$ & --$^{*}$ & --$^{*}$ \\
 Symptom screening (SSx) & -- & -- & -- & 0 & 1 & 0 & 1 \\

@@ -32,19 +32,19 @@
  Rate of transition from 'incipient' to 'contained' (age 15 and over, /year) & 2 & \cite{ragonnet2017} \\
  Rate of transition from 'contained' to 'incipient' (all ages, /year) & $\mathcal{U}(0.01,\,1)$ & Calibrated \\
  Rate of transition from 'contained' to 'cleared' (all ages, /year) & $\mathcal{U}(0.01,\,0.1)$ & \cite{emery2021,behr2019} \\
- Rel. risk of reinfection from 'contained' compartment (ref. 'mtb-naïve') & $\mathcal{U}(0.2,\,0.5)$ & \cite{andrews2012} \\
- Rel. risk of reinfection from 'cleared' and 'recovered' compartment (ref. 'mtb-naïve') & $\mathcal{U}(0.5,\,1)$ & \cite{verver2005,interrante2015} \\
+ Rel. risk of reinfection from 'contained' compartment (ref. 'M.tb-na\"ive') & $\mathcal{U}(0.2,\,0.5)$ & \cite{andrews2012} \\
+ Rel. risk of reinfection from 'cleared' and 'recovered' compartment (ref. 'M.tb-na\"ive') & $\mathcal{U}(0.5,\,1)$ & \cite{verver2005,interrante2015} \\
 \addlinespace
 \multicolumn{3}{@{}l}{\textbf{Active TB disease}} \\*
- Rate of progression from subclinical to clinical TB (/year) & $\mathcal{U}(0.5,\,5)$ & Calibrated \\
- Rate of regression from clinical to subclinical TB (/year) & 1 & Assumption, varied in sensitivity analysis \\
+ Rate of progression from asymptomatic to symptomatic TB (/year) & $\mathcal{U}(0.5,\,5)$ & Calibrated \\
+ Rate of regression from symptomatic to asymptomatic TB (/year) & 1 & Assumption, varied in sensitivity analysis \\
  Rate of progression from 'less infectious' to 'more infectious' TB (/year) & $\mathcal{U}(0.5,\,10)$ & Calibrated \\
  Rate of regression from 'more infectious' to 'less infectious' TB (/year) & 1 & Assumption, varied in sensitivity analysis \\
- Rel. infectiousness of subclinical TB (ref. clinical TB) & 0.5 & Assumption \\
+ Rel. infectiousness of asymptomatic TB (ref. symptomatic TB) & 0.5 & Assumption \\
  Rel. infectiousness of 'less infectious' TB (ref. 'more infectious' TB) & 0.4 & \cite{behr1999,asadi2022,yang2015} \\
- Rate of TB mortality for 'more infectious' clinical disease (/year) & 0.389 & \cite{ragonnet2021} \\
- Rate of TB mortality for 'less infectious' clinical disease (/year) & 0.025 & \cite{ragonnet2021} \\
- Rate of self-recovery for subclinical TB (/year) & 0.4 & \cite{ragonnet2021} \\
+ Rate of TB mortality for 'more infectious' symptomatic disease (/year) & 0.389 & \cite{ragonnet2021} \\
+ Rate of TB mortality for 'less infectious' symptomatic disease (/year) & 0.025 & \cite{ragonnet2021} \\
+ Rate of self-recovery for asymptomatic TB (/year) & 0.4 & \cite{ragonnet2021} \\
 \addlinespace
 \multicolumn{3}{@{}l}{\textbf{Passive detection and treatment}} \\*
  Annual rate of TB detection in 2020 & $\mathcal{U}(0.1,\,5)$ & Calibrated \\
@@ -52,7 +52,7 @@
  Shape parameter of passive detection scale-up profile & 0.15 & Early model exploration \\
  Past passive detection rate, as a fraction of the current one & $\mathcal{U}(0.3,\,1)$ & Calibrated \\
  Average TB treatment duration (years) & 0.5 & Standard six-month regimen \\
- Percentage of deaths among non-successful TB treatment outcomes & 40 & Treatment outcomes reported to WHO for Kiribati \\
+ Percentage of deaths among non-successful TB treatment outcomes & 40 & Treatment outcomes reported to the World Health Organization (WHO) for Kiribati \\
  TPT completion percentage & 70 & Observed during PEARL, varied in sensitivity analysis \\
 \addlinespace
 \multicolumn{3}{@{}l}{\textbf{Screening reachability}} \\*
