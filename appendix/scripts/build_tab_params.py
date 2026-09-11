@@ -27,15 +27,15 @@ SENS_PARAM_PREFIX = 'prev_se_'
 # Screening tools that are defined in the spreadsheet but not used in the analysis
 IGNORED_TOOLS = ('plts',)
 
-# (spreadsheet key, column header). Line breaks are chosen so no line exceeds the equal column width.
+# (spreadsheet key, column header). Keys must match the spreadsheet; only the header text is display text.
 SENS_COMPARTMENTS = [
-    ('incipient',      r'Incipient\\infection'),
-    ('contained',      r'Contained\\infection'),
-    ('cleared',        r'Cleared or\\recovered'),
-    ('subclin_lowinf', r'Subclinical\\low inf.'),
-    ('clin_lowinf',    r'Clinical\\low inf.'),
-    ('subclin_inf',    r'Subclinical\\high inf.'),
-    ('clin_inf',       r'Clinical\\high inf.'),
+    ('incipient',      r'Incipient infection'),
+    ('contained',      r'Contained infection'),
+    ('cleared',        r'Cleared or recovered'),
+    ('subclin_lowinf', r'Asympt.\ low inf.'),
+    ('clin_lowinf',    r'Sympt.\ low inf.'),
+    ('subclin_inf',    r'Asympt.\ high inf.'),
+    ('clin_inf',       r'Sympt.\ high inf.'),
 ]
 
 SENS_TOOLS = [
@@ -59,7 +59,7 @@ SENS_TABLE_NOTES = (
 
 # Ordered grouping of the main table. Every non-sensitivity parameter must appear exactly once.
 PARAM_CATEGORIES = [
-    ('Transmission and mixing', [
+    ('Transmission and age mixing', [
         'raw_transmission_rate',
         'infection_pop_scale',
         'bg_mixing',
@@ -67,7 +67,7 @@ PARAM_CATEGORIES = [
         'pc_strength',
         'rel_sus_children',
     ]),
-    ('Infection and early progression', [
+    ('Infection and progression to disease', [
         'progression_rate_age0',
         'progression_rate_age5',
         'progression_rate_age15',
@@ -151,7 +151,7 @@ PARAM_SOURCES = {
     'passive_detection_shape': EXPLORATION,
     'passive_detection_past_frac': CALIBRATED,
     'tx_duration': r'Standard six-month regimen',
-    'pct_neg_tx_death': r'Treatment outcomes reported to WHO for Kiribati',
+    'pct_neg_tx_death': r'Treatment outcomes reported to the World Health Organization (WHO) for Kiribati',
     'tpt_completion_perc': PEARL_OBSERVED,
     'reachable_pop_frac': PEARL_OBSERVED,
     'rel_detection_unreachable': ASSUMPTION,
@@ -219,7 +219,7 @@ def df_to_sens_table(df, caption, label):
     if unexpected:
         raise ValueError(f"Unrecognised screening sensitivity parameters: {unexpected}")
 
-    col_headers = [rf'\shortstack{{{header}}}' for _, header in SENS_COMPARTMENTS]
+    col_headers = [header for _, header in SENS_COMPARTMENTS]
     header = ' & '.join([r'\textbf{Screening approach}'] + col_headers) + r' \\'
     rows = [
         ' & '.join(
@@ -232,10 +232,10 @@ def df_to_sens_table(df, caption, label):
     return (
         r'\begin{table}[!ht]' + '\n' +
         r'\centering' + '\n' +
-        r'\small' + '\n' +
+        r'\footnotesize' + '\n' +
         r'\setlength{\tabcolsep}{3pt}' + '\n' +
         r'\caption{' + caption + r'}\label{' + label + '}\n' +
-        r'\begin{tabularx}{\textwidth}{l' + r'>{\centering\arraybackslash}X' * len(SENS_COMPARTMENTS) + '}' + '\n' +
+        r'\begin{tabularx}{\textwidth}{@{}p{2.2cm}' + r'*{%d}{>{\centering\arraybackslash}X}' % len(SENS_COMPARTMENTS) + r'@{}}' + '\n' +
         r'\toprule' + '\n' +
         header + '\n' +
         r'\midrule' + '\n' +
@@ -312,10 +312,12 @@ def main():
     ap.add_argument('--caption-sens', default=(
         r'Sensitivity of each screening approach to the model states it can detect, i.e.\ the probability '
         r'that an individual occupying a given state and screened under that approach is correctly identified. '
+        r'The Xpert+CXR approach is the full PEARL algorithm, which defines the reference standard and '
+        r'therefore has a sensitivity of one in every disease state by construction. '
         r'$\mathcal{U}(a,b)$ denotes a uniform prior estimated during calibration; dashes indicate states that '
         r'the approach does not target. Because operational constraints meant that frontline Xpert could be '
-        r'applied to only 35\% of those screened, the PEARL algorithm is represented as the corresponding '
-        r'weighted mixture of its two branches, '
+        r'applied to only 35\% of those screened, the PEARL programme as delivered is represented as the '
+        r'corresponding weighted mixture of its two branches, '
         r'$s^{\mathrm{PEARL}}_k = 0.35\,s^{\mathrm{Xpert+CXR}}_k + 0.65\,s^{\mathrm{CXR}}_k$.'
     ), help='LaTeX caption for the screening sensitivity table')
     ap.add_argument('--label-sens',   default='tab-screening-sens', help='LaTeX label for the screening sensitivity table')

@@ -21,9 +21,11 @@
 
 \geometry{margin=1in} 
 
-\title{Modelling mass TB and TBI screening in South Tarawa (Kiribati) --- Methods appendix}
+\title{Using early screening data to guide population-wide tuberculosis screening in Kiribati: a transmission modelling study\\[0.6em]
+\large Methods appendix}
 \date{}
-\author{Romain Ragonnet}
+\author{Romain Ragonnet, Jeremy Hill, Alfred Tonganibeia, David Shipman, Kerrie Shaw,\\
+Emma S McBryde, Warwick Britton, Ben J Marais, James M Trauer\\[0.6em]}
 
 \begin{document}
  
@@ -176,7 +178,7 @@ For each \(i,j\),
 S_{ij}(t) = b + S^{\mathrm{assort}}_{ij}(t) + \kappa_{\mathrm{pc}}\, S^{\mathrm{pc}}_{ij}(t),
 \quad S_{ij}(t)=S_{ji}(t),
 \]
-where \(b\) is the background level (\texttt{bg\_mixing}), \(S^{\mathrm{assort}}\) is an exponential kernel with spread \(\ell\) (\texttt{a\_spread}), and \(S^{\mathrm{pc}}\) encodes parent–child contacts from fertility patterns, with strength \(\kappa_{\mathrm{pc}}\) (\texttt{pc\_strength}). Smaller values of \(\ell\) correspond to more strongly assortative mixing by age.
+where \(b\) is the background level, \(S^{\mathrm{assort}}\) is an exponential kernel with spread \(\ell\), and \(S^{\mathrm{pc}}\) encodes parent–child contacts from fertility patterns, with strength \(\kappa_{\mathrm{pc}}\). Smaller values of \(\ell\) correspond to more strongly assortative mixing by age.
 
 \emph{Assortative age mixing.}
 \[
@@ -254,8 +256,8 @@ Mixing between the screening-reachable and hard-to-reach strata is assumed to be
 Barriers to participating in screening are unlikely to occur in isolation and may coincide with living conditions or health-seeking behaviours that also affect TB risk and access to routine diagnosis. Two multiplicative adjustments are therefore applied to the hard-to-reach stratum, relative to the screening-reachable stratum:
 
 \begin{itemize}
-    \item \textbf{Susceptibility to infection.} All infection and reinfection flows (from \(S\), \(C\), \(X\) and \(R\)) are multiplied by \(\theta_{\mathrm{sus}}\) (\texttt{rel\_sus\_unreachable}) in the hard-to-reach stratum, so that hard-to-reach individuals acquire infection at a higher rate than screening-reachable individuals experiencing the same force of infection. This factor is applied to the susceptibility side of transmission only; the relative infectiousness of individuals with TB does not differ by stratum.
-    \item \textbf{Passive detection.} The time-varying passive detection rate \(\delta(t)\) (Section~\ref{sec:screening}) is multiplied by \(\theta_{\mathrm{det}}\) (\texttt{rel\_detection\_unreachable}) in the hard-to-reach stratum, reflecting an assumption of reduced access to routine diagnostic services in the same population that is difficult to reach through active screening.
+    \item \textbf{Susceptibility to infection.} All infection and reinfection flows (from \(S\), \(C\), \(X\) and \(R\)) are multiplied by \(\theta_{\mathrm{sus}}\) in the hard-to-reach stratum, so that hard-to-reach individuals acquire infection at a higher rate than screening-reachable individuals experiencing the same force of infection. This factor is applied to the susceptibility side of transmission only; the relative infectiousness of individuals with TB does not differ by stratum.
+    \item \textbf{Passive detection.} The time-varying passive detection rate \(\delta(t)\) (Section~\ref{sec:screening}) is multiplied by \(\theta_{\mathrm{det}}\) in the hard-to-reach stratum, reflecting an assumption of reduced access to routine diagnostic services in the same population that is difficult to reach through active screening.
 \end{itemize}
 
 \noindent Neither multiplier is informed by the available data, so both are fixed rather than estimated; their values, and the range over which \(\theta_{\mathrm{sus}}\) is varied, are given in Section~\ref{sec:params}.
