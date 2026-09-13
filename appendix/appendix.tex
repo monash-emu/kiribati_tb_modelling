@@ -81,7 +81,7 @@ Age-specific demography and mixing are implemented explicitly to capture the eff
 The model is additionally stratified by screening reachability, distinguishing individuals who can participate in active screening from those who are hard to reach. The latter receive no active screening and are assumed to have greater susceptibility to infection and poorer access to passive case detection (Section~\ref{sec:reachability}).
 
 \paragraph{Simulation period and initial conditions.}
-The model is simulated from 1850 to 2035. The initial population size is set to the earliest available estimate for the modelled population (1950) from the United Nations World Population Prospects (WPP), and no population growth is applied before that first data year, so the population size remains constant over the initial period and follows the observed trajectory thereafter (Section~\ref{sec:demog}).
+The model is simulated from 1850 to 2035. The initial population size is set to the earliest available estimate for the modelled population (1950) from the United Nations World Population Prospects, and no population growth is applied before that first data year, so the population size remains constant over the initial period and follows the observed trajectory thereafter (Section~\ref{sec:demog}).
 The epidemic is seeded at the start of the simulation with 100 individuals in the symptomatic, high-infectiousness disease state (\(D_{SH}\)), with the remainder of the population placed in the M.tb-na\"ive compartment (\(S\)).
 The long period preceding the first calibration data allows the age distribution and the TB epidemic to reach an endemic equilibrium well before the period informed by observations, so that results are insensitive to the size and composition of the initial seed.
 
@@ -112,7 +112,7 @@ The repository includes instructions for installation and reproduction of result
 \section{Population Structure and Demography}
 \label{sec:demog}
 
-The population is stratified by age, and every age and disease state in the model is subject to the appropriate all‑cause and TB‑specific mortality rates. Age‑specific all-cause (non-TB) mortality rates and the total population size over time are taken from the WPP, as described in Section~\ref{sec:demog-inputs}.
+The population is stratified by age, and every age and disease state in the model is subject to the appropriate all‑cause and TB‑specific mortality rates. Age‑specific all-cause (non-TB) mortality rates and the total population size over time are taken from the United Nations World Population Prospects, as described in Section~\ref{sec:demog-inputs}.
 
 Rather than specifying a birth rate independently, the model reproduces the observed population trajectory by construction, through two devices.
 
@@ -153,7 +153,7 @@ The breaks were chosen so that every age-dependent process and observation used 
 
 \paragraph{Notation and data sources.}
 Let \(i,j \in \{1,\dots,G\}\) index age groups and \([a_i,b_i]\) denote the single ages in group \(i\). Calendar time is \(t\) (years). 
-The construction uses the WPP population and fertility series described in Section~\ref{sec:demog-inputs}; for modelled years outside the data ranges, quantities are clamped to the nearest available year.
+The construction uses the United Nations World Population Prospects population and fertility series described in Section~\ref{sec:demog-inputs}; for modelled years outside the data ranges, quantities are clamped to the nearest available year.
 \paragraph{Overview.}
 At time \(t\), we construct an age-specific contact matrix
 \[
@@ -227,9 +227,9 @@ Progression from \(E\) is age-specific (three categories: $<5$, 5--14, 15+) and 
 
 \paragraph{Symptom status and infectiousness transitions.}
 \label{sec:tb_disease}
-Movements between asymptomatic and symptomatic states, and between low and high infectiousness, govern within-disease dynamics. The cross-sectional observations available from the completed PEARL screening phase constrain the relative sizes of the four disease compartments, but not the speed at which individuals move between them: the same distribution of prevalent TB across states can be reproduced by slow or by rapid transitions in both directions. To resolve this identifiability problem, the two regression rates (symptomatic \(\to\) asymptomatic and high \(\to\) low infectiousness) are fixed at a common value, while the two corresponding progression rates (asymptomatic \(\to\) symptomatic and low \(\to\) high infectiousness) are estimated during calibration. The value adopted for the regression rate, the priors placed on the estimated rates, and the range over which the regression rate is varied are given in Section~\ref{sec:params}.
+Movements between asymptomatic and symptomatic states, and between low and high infectiousness, govern within-disease dynamics. The cross-sectional observations available from the completed PEARL screening phase constrain the relative sizes of the four disease compartments, but not the speed at which individuals move between them: the same distribution of prevalent TB across states can be reproduced by slow or by rapid transitions in both directions. To resolve this identifiability problem, the two regression rates (symptomatic \(\to\) asymptomatic and high \(\to\) low infectiousness) are fixed at a common value, while the two corresponding progression rates (asymptomatic \(\to\) symptomatic and low \(\to\) high infectiousness) are estimated during calibration. The value adopted for the regression rate, the priors placed on the estimated progression rates, and the range over which the regression rate is varied in sensitivity analyses are given in Section~\ref{sec:params}.
 
-\paragraph{Reinfection.}
+\paragraph{Susceptibility to infection and reinfection.}
 Reinfection is permitted from \(C\), \(X\), and \(R\) with relative susceptibilities \(\rho_C\) (contained) and \(\rho_X=\rho_R\) (cleared and recovered), and a child susceptibility modifier \(\sigma^{\text{child}}\) applied when infection arises from \(S\) in $<15$\,y groups.
 This adjustment captures the effect of BCG vaccination, which is typically administered in infancy and provides protection against infection for several years.
 
