@@ -36,17 +36,17 @@ title_lookup = {
 
     "tb_prevalence_per100k": "TB prevalence (/100k)",
     "tbi_prevalence_perc": "TBI prevalence (%)",
-    "perc_prev_subclinicalXreach_reachable": "% TB subclinical",
+    "perc_prev_subclinicalXreach_reachable": "% TB asymptomatic",
     "perc_prev_infectiousXreach_reachable": "% TB more infectious",
     "notifications": "TB notifications (n)",
-    "perc_notifications_clin": "Clinical notifications (%)",
+    "perc_notifications_clin": "Symptomatic notifications (%)",
 
     "viable_tbi_prevalence_perc": "Viable infection prevalence (%)",
     "tst_posXreach_reachable_perc": "TST positivity (%)",
     "pearl_posXreach_reachable_per100k": "PEARL TB prevalence (/100k)",
     "cxr_posXreach_reachable_per100k": "CXR TB prevalence (/100k)",
 
-    "passive_detection_rate_clin": "Passive detec. rate (/y), clinical TB",
+    "passive_detection_rate_clin": "Passive detec. rate (/y), symptomatic TB",
 
     "tst_posXage_3_9Xreach_reachable_perc": "TST positivity 3-9yrs old (%)",
     "tst_posXage_10Xreach_reachable_perc": "TST positivity 10-14yrs old (%)",
@@ -1254,7 +1254,7 @@ def make_figure_1_calibration_from_task(
         model_high.append(quantiles["0.975"])
         observed.append(obs)
 
-        suffix = f" y.o.\\n({year})"
+        suffix = f" y.o.\n({year})"
         if age == "3_9":
             x_tick_labels.append("3-9" + suffix)
         elif age == "15+":
