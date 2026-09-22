@@ -1386,7 +1386,10 @@ def make_figure_4_algorithms_coverage_from_task(
 
     fig, axes = plt.subplots(2, 1, figsize=figsize, sharex=False)
 
-    group_labels = ["PEARL (CXR-Xpert-TST)", "CXR-TST", "Disease screening only (CXR)"]
+    # group_labels = ["PEARL (CXR-Xpert-TST)", "CXR-TST", "Disease screening only (CXR)"]
+    group_labels = ["CXR-Xpert-TST\n(current PEARL)", "CXR-TST\n(excluding Xpert)", "CXR\n(disease only)"]
+
+
     coverage_labels = ["65%", "75%", "85%"]
     xtick_labels = coverage_labels * len(group_labels)
 
