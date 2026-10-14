@@ -1277,8 +1277,11 @@ def make_figure_1_calibration_from_task(
     figsize=None,
     selected_outputs=None,
     posterior_params=None,
-    posterior_n_col=4,
-    posterior_row_height=1.3,
+    posterior_n_col=2,
+    posterior_col_width=1.9,
+    posterior_gap=0.75,
+    posterior_wspace=0.4,
+    posterior_hspace=0.55,
     posterior_colour=None,
     prior_colour="grey",
     posterior_kde_bw="silverman",
@@ -1287,8 +1290,10 @@ def make_figure_1_calibration_from_task(
     """Generate manuscript Figure 1 from a task folder path.
 
     If posterior_params is provided, prior vs posterior density panels are added
-    below the calibration panels. figsize then refers to the calibration part only:
-    the figure is extended downwards so the existing panels keep their size and ratios.
+    to the right of the calibration panels, in a ``posterior_n_col`` wide grid that
+    spans the height of the calibration block. figsize then refers to the calibration
+    part only: the figure is extended rightwards so the existing panels keep their
+    size and ratios.
     Any empty slot in the posterior grid is used for the prior/posterior legend.
 
     ``posterior_kde_bw`` sets the bandwidth rule (or numeric bandwidth) for the
@@ -1324,24 +1329,24 @@ def make_figure_1_calibration_from_task(
         if missing:
             raise KeyError(f"Parameters not found in posterior: {missing}")
 
-    # Absolute sizes (inches) of the extra posterior block
-    post_gap = 0.8
-    post_hspace = 0.55
+    # Absolute sizes (inches) of the posterior block added to the right
     n_post_row = ceil((len(posterior_params) + 1) / posterior_n_col) if posterior_params else 0
-    post_block_h = (
-        n_post_row * posterior_row_height + (n_post_row - 1) * post_hspace * posterior_row_height
+    post_block_w = (
+        posterior_n_col * posterior_col_width
+        + (posterior_n_col - 1) * posterior_wspace * posterior_col_width
         if n_post_row else 0.0
     )
-    base_h = figsize[1]
-    total_h = base_h + post_gap + post_block_h if n_post_row else base_h
+    base_w, base_h = figsize
+    total_w = base_w + posterior_gap + post_block_w if n_post_row else base_w
 
-    fig = plt.figure(figsize=(figsize[0], total_h))
+    fig = plt.figure(figsize=(total_w, base_h))
 
     # Pin the calibration grid to the same absolute position it would have in the
     # base-size figure, so adding posterior panels does not change its panel sizes.
+    sp_left, sp_right = fig.subplotpars.left, fig.subplotpars.right
     sp_top, sp_bottom = fig.subplotpars.top, fig.subplotpars.bottom
-    main_top = 1.0 - (1.0 - sp_top) * base_h / total_h
-    main_bottom = 1.0 - (1.0 - sp_bottom) * base_h / total_h
+    main_left = sp_left * base_w / total_w
+    main_right = sp_right * base_w / total_w
 
     if use_model_panel:
         gs = gridspec.GridSpec(
@@ -1351,8 +1356,10 @@ def make_figure_1_calibration_from_task(
             height_ratios=[1.8] + [1] * n_data_row,
             hspace=0.2,
             wspace=0.3,
-            top=main_top,
-            bottom=main_bottom,
+            left=main_left,
+            right=main_right,
+            top=sp_top,
+            bottom=sp_bottom,
         )
 
         ax_pdf = fig.add_subplot(gs[0, :])
@@ -1380,8 +1387,10 @@ def make_figure_1_calibration_from_task(
             figure=fig,
             hspace=0.35,
             wspace=0.3,
-            top=main_top,
-            bottom=main_bottom,
+            left=main_left,
+            right=main_right,
+            top=sp_top,
+            bottom=sp_bottom,
         )
         ax_pdf = None
         row_offset = 0
@@ -1484,14 +1493,17 @@ def make_figure_1_calibration_from_task(
 
     if n_post_row:
         post_colour = posterior_colour or colour
+        post_left = sp_right * base_w + posterior_gap
         gs_post = gridspec.GridSpec(
             n_post_row,
             posterior_n_col,
             figure=fig,
-            hspace=post_hspace,
-            wspace=0.3,
-            top=1.0 - ((1.0 - sp_bottom) * base_h + post_gap) / total_h,
-            bottom=sp_bottom * base_h / total_h,
+            hspace=posterior_hspace,
+            wspace=posterior_wspace,
+            left=post_left / total_w,
+            right=(post_left + post_block_w) / total_w,
+            top=sp_top,
+            bottom=sp_bottom,
         )
         post_axes = []
         for i, param in enumerate(posterior_params):
