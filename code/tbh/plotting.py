@@ -17,6 +17,8 @@ import numpy as np
 
 from estival import priors as esp
 
+from arviz.stats.density_utils import _get_bw
+
 try:
     from pdf2image import convert_from_path
 except ImportError:
@@ -53,6 +55,16 @@ title_lookup = {
     "tst_posXage_15+Xreach_reachable_perc": "TST positivity 15+yrs old (%)",
     "tst_posXage_18+Xreach_reachable_perc": "TST positivity 18+yrs old (%)",
 
+}
+
+param_label_lookup = {
+    "rel_sus_children": "Rel. susceptibility, <15 y.o.",
+    "breakdown_rate": "Breakdown rate (/y)",
+    "clearance_rate": "Clearance rate (/y)",
+    "clinical_progression_rate": "Symptom onset rate (/y)",
+    "infectiousness_gain_rate": "Infectiousness gain rate (/y)",
+    "recent_detection_rate": "Detection rate in 2020 (/y)",
+    "prev_se_cleared_tst": "TST positivity, cleared/recovered",
 }
 
 from tbh.runner_tools import DEFAULT_ANALYSIS_CONFIG
@@ -133,6 +145,33 @@ def plot_traces(idata, bcm, burn_in=0, n_col=3):
     return fig
 
 
+def resolve_kde_bw(values, kde_bw="silverman", kde_smoothing=1.0):
+    """Scale a KDE bandwidth rule by a smoothing factor.
+
+    Args:
+        values: Samples the KDE will be estimated from
+        kde_bw: Bandwidth rule (e.g. "silverman", "scott", "isj") or numeric bandwidth
+        kde_smoothing: Multiplier applied to the bandwidth, with values above one
+            giving a smoother (more heavily blurred) density and values below one
+            a more detailed density
+
+    Returns:
+        The unchanged ``kde_bw`` if no smoothing is requested, otherwise the
+        numeric bandwidth scaled by ``kde_smoothing``
+    """
+    if kde_smoothing is None or np.isclose(kde_smoothing, 1.0):
+        return kde_bw
+    if kde_smoothing <= 0.0:
+        raise ValueError(f"kde_smoothing must be positive, got {kde_smoothing}.")
+
+    if isinstance(kde_bw, (int, float)) and not isinstance(kde_bw, bool):
+        return float(kde_bw) * kde_smoothing
+
+    values = np.asarray(values).flatten()
+    values = values[np.isfinite(values)]
+    return float(_get_bw(values, kde_bw)) * kde_smoothing
+
+
 def plot_post_prior_comparison(
     idata: az.InferenceData,
     burn_in: int,
@@ -141,7 +180,8 @@ def plot_post_prior_comparison(
     n_col=4,
     req_size=None,
     output_folder_path=None,
-    kde_bw="silverman"
+    kde_bw="silverman",
+    kde_smoothing=1.0,
 ) -> plt.figure:
     """Plot comparison of calibration posterior estimates
     for parameters against their prior distributions.
@@ -153,6 +193,8 @@ def plot_post_prior_comparison(
         n_col: Requested number of columns
         req_size: Figure size request
         kde_bw: Bandwidth rule or scalar for KDE smoothing
+        kde_smoothing: Multiplier on the KDE bandwidth, with values above one
+            giving smoother posterior densities
 
     Returns:
         The figure
@@ -181,7 +223,7 @@ def plot_post_prior_comparison(
         az.plot_kde(
             values,
             ax=ax,
-            bw=kde_bw,
+            bw=resolve_kde_bw(values, kde_bw, kde_smoothing),
             plot_kwargs={"color": "tab:blue", "linewidth": 1.8},
             fill_kwargs={"alpha": 0.3, "color": "tab:blue"}
         )
@@ -212,6 +254,81 @@ def plot_post_prior_comparison(
         plt.close(fig)
 
     return fig
+
+
+def plot_prior_posterior_panel(
+    ax,
+    values,
+    prior=None,
+    posterior_colour="#B22222",
+    prior_colour="grey",
+    kde_bw="silverman",
+    kde_smoothing=1.0,
+    xlabel=None,
+):
+    """Plot one posterior KDE against its prior density on a single axis.
+
+    Unlike plot_post_prior_comparison, the prior is drawn over its full support
+    (when finite) so that the narrowing from prior to posterior is visible.
+
+    ``kde_smoothing`` multiplies the bandwidth implied by ``kde_bw``, so values
+    above one give a smoother posterior curve and values below one a more
+    detailed one.
+    """
+    values = np.asarray(values).flatten()
+    values = values[np.isfinite(values)]
+
+    x_min, x_max = float(np.min(values)), float(np.max(values))
+    if prior is not None and hasattr(prior, "bounds"):
+        lower, upper = prior.bounds()
+        if np.isfinite(lower) and np.isfinite(upper):
+            x_min, x_max = min(x_min, float(lower)), max(x_max, float(upper))
+    pad = 0.05 * (x_max - x_min) if x_max > x_min else 0.5
+    x_lim = (x_min - pad, x_max + pad)
+
+    if prior is not None and type(prior) != esp.TruncNormalPrior:
+        x_vals = np.linspace(*x_lim, 500)
+        with np.errstate(divide="ignore"):
+            y_vals = np.exp(prior.logpdf(x_vals))
+        ax.plot(x_vals, y_vals, color=prior_colour, linewidth=1.0)
+        ax.fill_between(x_vals, y_vals, color=prior_colour, alpha=0.25, linewidth=0)
+
+    az.plot_kde(
+        values,
+        ax=ax,
+        bw=resolve_kde_bw(values, kde_bw, kde_smoothing),
+        plot_kwargs={"color": posterior_colour, "linewidth": 1.2},
+        fill_kwargs={"alpha": 0.35, "color": posterior_colour},
+    )
+
+    ax.set_xlim(*x_lim)
+    ax.set_ylim(bottom=0.0)
+    ax.set_yticks([])
+    if xlabel is not None:
+        ax.set_xlabel(xlabel)
+    return ax
+
+
+def load_burnt_posterior_from_task(task_path):
+    """Load a task's posterior samples with the burn-in recorded in details.yaml discarded."""
+    task_path = Path(task_path)
+    idata_path = task_path / "idata.nc"
+    if not idata_path.exists():
+        raise FileNotFoundError(f"Missing inference data file: {idata_path}")
+    idata = az.from_netcdf(idata_path)
+
+    burn_in = 0
+    details_path = task_path / "details.yaml"
+    if details_path.exists():
+        with open(details_path, "r") as f:
+            docs = list(yaml.safe_load_all(f))
+        if len(docs) > 2 and isinstance(docs[2], dict):
+            burn_in = int(docs[2].get("burn_in", 0))
+
+    posterior = idata.posterior
+    if burn_in > 0 and "draw" in posterior.dims:
+        posterior = posterior.isel(draw=slice(burn_in, None))
+    return posterior
 
 
 def plot_multiple_posteriors(idata, burn_in=0, req_vars=None, output_folder_path=None):
@@ -268,6 +385,7 @@ def plot_dual_posterior_by_rates(
     panel_a_var="clinical_progression_rate",
     panel_b_candidates=None,
     kde_bw="silverman",
+    kde_smoothing=1.0,
     fig_size=(12.5, 4.8),
 ):
     """Plot two posterior density panels across tasks for one relative susceptibility value.
@@ -281,6 +399,8 @@ def plot_dual_posterior_by_rates(
         panel_a_var: Variable name for panel a.
         panel_b_candidates: Candidate variable names for panel b.
         kde_bw: Bandwidth rule passed to ``az.plot_kde``.
+        kde_smoothing: Multiplier on the KDE bandwidth, with values above one giving
+            smoother posterior densities.
         fig_size: Matplotlib figure size.
 
     Returns:
@@ -394,7 +514,7 @@ def plot_dual_posterior_by_rates(
             az.plot_kde(
                 r[panel["vals_key"]],
                 ax=panel["ax"],
-                bw=kde_bw,
+                bw=resolve_kde_bw(r[panel["vals_key"]], kde_bw, kde_smoothing),
                 plot_kwargs={"color": color, "linewidth": 1.8},
                 fill_kwargs={"color": color, "alpha": 0.15},
                 label=label,
@@ -1156,8 +1276,25 @@ def make_figure_1_calibration_from_task(
     colour="#B22222",
     figsize=None,
     selected_outputs=None,
+    posterior_params=None,
+    posterior_n_col=4,
+    posterior_row_height=1.3,
+    posterior_colour=None,
+    prior_colour="grey",
+    posterior_kde_bw="silverman",
+    posterior_kde_smoothing=1.0,
 ):
-    """Generate manuscript Figure 1 from a task folder path."""
+    """Generate manuscript Figure 1 from a task folder path.
+
+    If posterior_params is provided, prior vs posterior density panels are added
+    below the calibration panels. figsize then refers to the calibration part only:
+    the figure is extended downwards so the existing panels keep their size and ratios.
+    Any empty slot in the posterior grid is used for the prior/posterior legend.
+
+    ``posterior_kde_bw`` sets the bandwidth rule (or numeric bandwidth) for the
+    posterior KDEs and ``posterior_kde_smoothing`` multiplies it, so values above
+    one give smoother posterior curves.
+    """
     if selected_outputs is None:
         selected_outputs = [
             "pearl_posXreach_reachable_per100k",
@@ -1179,7 +1316,33 @@ def make_figure_1_calibration_from_task(
     if figsize is None:
         figsize = (10.8, 8.5) if use_model_panel else (10.8, 5.2)
 
-    fig = plt.figure(figsize=figsize)
+    posterior_params = list(posterior_params) if posterior_params else []
+    if posterior_params:
+        posterior = load_burnt_posterior_from_task(task_path)
+        prior_lookup = {p.name: p for p in bcm.priors.values()}
+        missing = [p for p in posterior_params if p not in posterior.data_vars]
+        if missing:
+            raise KeyError(f"Parameters not found in posterior: {missing}")
+
+    # Absolute sizes (inches) of the extra posterior block
+    post_gap = 0.8
+    post_hspace = 0.55
+    n_post_row = ceil((len(posterior_params) + 1) / posterior_n_col) if posterior_params else 0
+    post_block_h = (
+        n_post_row * posterior_row_height + (n_post_row - 1) * post_hspace * posterior_row_height
+        if n_post_row else 0.0
+    )
+    base_h = figsize[1]
+    total_h = base_h + post_gap + post_block_h if n_post_row else base_h
+
+    fig = plt.figure(figsize=(figsize[0], total_h))
+
+    # Pin the calibration grid to the same absolute position it would have in the
+    # base-size figure, so adding posterior panels does not change its panel sizes.
+    sp_top, sp_bottom = fig.subplotpars.top, fig.subplotpars.bottom
+    main_top = 1.0 - (1.0 - sp_top) * base_h / total_h
+    main_bottom = 1.0 - (1.0 - sp_bottom) * base_h / total_h
+
     if use_model_panel:
         gs = gridspec.GridSpec(
             n_data_row + 1,
@@ -1188,6 +1351,8 @@ def make_figure_1_calibration_from_task(
             height_ratios=[1.8] + [1] * n_data_row,
             hspace=0.2,
             wspace=0.3,
+            top=main_top,
+            bottom=main_bottom,
         )
 
         ax_pdf = fig.add_subplot(gs[0, :])
@@ -1215,6 +1380,8 @@ def make_figure_1_calibration_from_task(
             figure=fig,
             hspace=0.35,
             wspace=0.3,
+            top=main_top,
+            bottom=main_bottom,
         )
         ax_pdf = None
         row_offset = 0
@@ -1310,6 +1477,58 @@ def make_figure_1_calibration_from_task(
             1.1,
             f"{chr(97 + letter_idx)})",
             transform=axis.transAxes,
+            fontsize=letter_fontsize,
+            fontweight="bold",
+            va="top",
+        )
+
+    if n_post_row:
+        post_colour = posterior_colour or colour
+        gs_post = gridspec.GridSpec(
+            n_post_row,
+            posterior_n_col,
+            figure=fig,
+            hspace=post_hspace,
+            wspace=0.3,
+            top=1.0 - ((1.0 - sp_bottom) * base_h + post_gap) / total_h,
+            bottom=sp_bottom * base_h / total_h,
+        )
+        post_axes = []
+        for i, param in enumerate(posterior_params):
+            ax = fig.add_subplot(gs_post[i // posterior_n_col, i % posterior_n_col])
+            plot_prior_posterior_panel(
+                ax,
+                posterior[param].values,
+                prior=prior_lookup.get(param),
+                posterior_colour=post_colour,
+                prior_colour=prior_colour,
+                kde_bw=posterior_kde_bw,
+                kde_smoothing=posterior_kde_smoothing,
+                xlabel=param_label_lookup.get(param, param),
+            )
+            if i % posterior_n_col == 0:
+                ax.set_ylabel("Density")
+            post_axes.append(ax)
+
+        n_slots = n_post_row * posterior_n_col
+        if n_slots > len(posterior_params):
+            i_leg = len(posterior_params)
+            ax_leg = fig.add_subplot(gs_post[i_leg // posterior_n_col, i_leg % posterior_n_col])
+            ax_leg.axis("off")
+            ax_leg.legend(
+                handles=[
+                    mpatches.Patch(facecolor=prior_colour, alpha=0.4, edgecolor=prior_colour, label="Prior"),
+                    mpatches.Patch(facecolor=post_colour, alpha=0.5, edgecolor=post_colour, label="Posterior"),
+                ],
+                loc="center",
+                frameon=False,
+            )
+
+        post_axes[0].text(
+            -0.15,
+            1.1,
+            f"{chr(97 + len(axes) + letter_start)})",
+            transform=post_axes[0].transAxes,
             fontsize=letter_fontsize,
             fontweight="bold",
             va="top",
