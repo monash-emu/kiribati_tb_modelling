@@ -59,11 +59,11 @@ title_lookup = {
 
 param_label_lookup = {
     "rel_sus_children": "Rel. susceptibility, <15 y.o.",
-    "breakdown_rate": "Breakdown rate (/y)",
-    "clearance_rate": "Clearance rate (/y)",
+    "breakdown_rate": "Immune containment\nbreakdown rate (/y)",
+    "clearance_rate": "Infection clearance rate (/y)",
     "clinical_progression_rate": "Symptom onset rate (/y)",
     "infectiousness_gain_rate": "Infectiousness gain rate (/y)",
-    "recent_detection_rate": "Detection rate in 2020 (/y)",
+    "recent_detection_rate": "Case detection rate in 2020 (/y)",
     "prev_se_cleared_tst": "TST positivity, cleared/recovered",
 }
 
@@ -265,6 +265,7 @@ def plot_prior_posterior_panel(
     kde_bw="silverman",
     kde_smoothing=1.0,
     xlabel=None,
+    xticks_at_prior_bounds=True,
 ):
     """Plot one posterior KDE against its prior density on a single axis.
 
@@ -274,14 +275,19 @@ def plot_prior_posterior_panel(
     ``kde_smoothing`` multiplies the bandwidth implied by ``kde_bw``, so values
     above one give a smoother posterior curve and values below one a more
     detailed one.
+
+    With ``xticks_at_prior_bounds``, the only x ticks are the (finite) lower and
+    upper bounds of the prior.
     """
     values = np.asarray(values).flatten()
     values = values[np.isfinite(values)]
 
+    bounds = None
     x_min, x_max = float(np.min(values)), float(np.max(values))
     if prior is not None and hasattr(prior, "bounds"):
         lower, upper = prior.bounds()
         if np.isfinite(lower) and np.isfinite(upper):
+            bounds = (float(lower), float(upper))
             x_min, x_max = min(x_min, float(lower)), max(x_max, float(upper))
     pad = 0.05 * (x_max - x_min) if x_max > x_min else 0.5
     x_lim = (x_min - pad, x_max + pad)
@@ -304,6 +310,8 @@ def plot_prior_posterior_panel(
     ax.set_xlim(*x_lim)
     ax.set_ylim(bottom=0.0)
     ax.set_yticks([])
+    if xticks_at_prior_bounds and bounds is not None:
+        ax.set_xticks(list(bounds), labels=[f"{b:g}" for b in bounds])
     if xlabel is not None:
         ax.set_xlabel(xlabel)
     return ax
