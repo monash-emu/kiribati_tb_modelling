@@ -21,7 +21,7 @@
 
 \geometry{margin=1in} 
 
-\title{Using early screening data to guide population-wide tuberculosis screening in Kiribati: a transmission modelling study\\[0.6em]
+\title{Using early screening data to inform population-wide tuberculosis screening in Kiribati: a transmission modelling study\\[0.6em]
 \large Methods appendix}
 \date{}
 \author{Romain Ragonnet, Jeremy Hill, Alfred Tonganibeia, David Shipman, Kerrie Shaw,\\
@@ -637,16 +637,18 @@ so that the 95\% interval of the likelihood spans \(\pm 20\%\) (or \(\pm 40\%\) 
 
 The wider tolerance applied to the notification target reflects the weaker correspondence between this observation and the quantity the model produces. The model output is the number of individuals commencing TB treatment, whereas the notification series is a programmatic record compiled over several decades, subject to incomplete and variable reporting, changes in recording practice and diagnostic capacity over time, and small annual counts that fluctuate substantially for reasons unrelated to the underlying epidemic. It was additionally necessary to impute the locality of a proportion of notifications each year in order to restrict the series to the modelled area (Section~\ref{sec:calib-data}), which introduces further error. The remaining targets were measured directly during the completed PEARL screening phase under a defined protocol and correspond more closely to their modelled counterparts. Widening the notification tolerance therefore prevents the long annual series from dominating the likelihood relative to these cross-sectional measurements, and allows the calibrated trajectory to reproduce the level and shape of the notification series without being drawn towards year-to-year variation that the model is not intended to capture.
 
-The total log-likelihood is
+Each target contributes the mean of the log-densities of its \(n_k\) observations, so that every target carries equal weight in the likelihood regardless of the number of observations it contains. The total log-likelihood is
 \[
 \log L(\theta)
 =
 \sum_k
+\frac{1}{n_k}
 \sum_t
 \Big(-\frac{(y_{k,t} - m_{k,t}(\theta))^2}{2\sigma_k^2}
 -
 \frac{1}{2}\log(2\pi\sigma_k^2)\Big).
 \]
+All targets other than notifications consist of a single observation (\(n_k = 1\)); the notification target comprises the \(n_k = 25\) annual values from 1998 to 2022, which therefore contribute once in aggregate rather than once per year.
 
 \paragraph{Mixing matrix penalty.}
 The estimated mixing matrix is compared with the external synthetic matrix using the Canberra distance between the spectral-radius-normalised model matrix \(\tilde{\mathbf{C}}(t)\) evaluated in 2025 and the normalised external matrix \(\mathbf{C}^{\mathrm{ext}}\):
