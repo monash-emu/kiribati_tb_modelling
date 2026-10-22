@@ -182,6 +182,8 @@ def plot_post_prior_comparison(
     output_folder_path=None,
     kde_bw="silverman",
     kde_smoothing=1.0,
+    posterior_colour="tab:blue",
+    prior_colour="k",
 ) -> plt.figure:
     """Plot comparison of calibration posterior estimates
     for parameters against their prior distributions.
@@ -195,6 +197,8 @@ def plot_post_prior_comparison(
         kde_bw: Bandwidth rule or scalar for KDE smoothing
         kde_smoothing: Multiplier on the KDE bandwidth, with values above one
             giving smoother posterior densities
+        posterior_colour: Colour of the posterior density
+        prior_colour: Colour of the prior density
 
     Returns:
         The figure
@@ -224,8 +228,8 @@ def plot_post_prior_comparison(
             values,
             ax=ax,
             bw=resolve_kde_bw(values, kde_bw, kde_smoothing),
-            plot_kwargs={"color": "tab:blue", "linewidth": 1.8},
-            fill_kwargs={"alpha": 0.3, "color": "tab:blue"}
+            plot_kwargs={"color": posterior_colour, "linewidth": 1.8},
+            fill_kwargs={"alpha": 0.3, "color": posterior_colour}
         )
 
         distri = prior_lookup.get(param)
@@ -236,8 +240,8 @@ def plot_post_prior_comparison(
                 pad = 0.15 * (x_max - x_min)
                 x_vals = np.linspace(x_min - pad, x_max + pad, 200)
                 y_vals = np.exp(distri.logpdf(x_vals))
-                ax.plot(x_vals, y_vals, color="k", linewidth=1.3, alpha=0.9)
-                ax.fill_between(x_vals, y_vals, color="k", alpha=0.15)
+                ax.plot(x_vals, y_vals, color=prior_colour, linewidth=1.3, alpha=0.9)
+                ax.fill_between(x_vals, y_vals, color=prior_colour, alpha=0.25)
 
         ax.set_title(param)
         ax.set_xlabel("Value")
